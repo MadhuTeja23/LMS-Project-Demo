@@ -1,8 +1,7 @@
-import React from 'react'
-
+import AnimatedRoutes from './AnimatedRoutes'
 function Webinar() {
   return (
-    <div>Webinar</div>
+    <AnimatedRoutes />
   )
 }
 

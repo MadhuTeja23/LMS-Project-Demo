@@ -3,9 +3,13 @@ import { useState } from "react";
 const QuestionForm = ({ type, onAdd }) => {
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", "", "", ""]);
-  const [correctOption, setCorrectOption] = useState(null); // Changed to null for easier index check
-  const [marks, setMarks] = useState(5);
+  const [correctOption, setCorrectOption] = useState(null);
+  const [marks, setMarks] = useState(10); // Higher default for coding
   const [image, setImage] = useState(null);
+
+  // Coding Specific State
+  const [codeLanguage, setCodeLanguage] = useState("javascript");
+  const [starterCode, setStarterCode] = useState("// Write your solution here...");
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -24,14 +28,14 @@ const QuestionForm = ({ type, onAdd }) => {
     let payload = { type, question, image, marks: parseInt(marks) || 0 };
 
     if (type === "quiz") {
-      // Validate correct option selected
       if (correctOption === null && options.some(o => o.trim() !== "")) {
-        // If they haven't selected a correct option, maybe alert? 
-        // For now allowing loose validation or setting default?
-        // Ideally we enforce it.
+        // Validation
       }
       payload.options = options;
-      payload.correctOption = correctOption; // Index
+      payload.correctOption = correctOption;
+    } else if (type === "coding") {
+      payload.language = codeLanguage;
+      payload.starterCode = starterCode;
     }
 
     onAdd(payload);
@@ -40,8 +44,9 @@ const QuestionForm = ({ type, onAdd }) => {
     setQuestion("");
     setOptions(["", "", "", ""]);
     setCorrectOption(null);
-    setMarks(5);
+    setMarks(type === 'coding' ? 10 : 5);
     setImage(null);
+    setStarterCode("// Write your solution here...");
   };
 
   return (
@@ -50,11 +55,17 @@ const QuestionForm = ({ type, onAdd }) => {
       <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
         <div className="d-flex align-items-center gap-2">
           <span className={`badge rounded-pill px-3 py-2 ${type === 'quiz' ? 'bg-primary bg-opacity-10 text-primary' :
-              type === 'short' ? 'bg-info bg-opacity-10 text-info' :
-                'bg-warning bg-opacity-10 text-dark'
+            type === 'coding' ? 'bg-dark text-white' :
+              type === 'abacus' ? 'bg-danger bg-opacity-10 text-danger' :
+                type === 'short' ? 'bg-info bg-opacity-10 text-info' :
+                  'bg-warning bg-opacity-10 text-dark'
             }`}>
-            <i className={`bi ${type === 'quiz' ? 'bi-list-ul' : type === 'short' ? 'bi-text-paragraph' : 'bi-journal-text'} me-2`}></i>
-            {type === 'quiz' ? 'Multiple Choice' : type === 'short' ? 'Short Answer' : 'Long Essay'}
+            <i className={`bi ${type === 'quiz' ? 'bi-list-ul' :
+              type === 'coding' ? 'bi-code-slash' :
+                type === 'abacus' ? 'bi-calculator' :
+                  type === 'short' ? 'bi-text-paragraph' : 'bi-journal-text'
+              } me-2`}></i>
+            {type === 'quiz' ? 'Multiple Choice' : type === 'coding' ? 'Coding Challenge' : type === 'abacus' ? 'Abacus / Mental Math' : type === 'short' ? 'Short Answer' : 'Long Essay'}
           </span>
         </div>
         <div className="d-flex align-items-center">
@@ -148,13 +159,55 @@ const QuestionForm = ({ type, onAdd }) => {
         </div>
       )}
 
-      {/* Answer Preview for Non-Quiz */}
-      {(type === "short" || type === "long") && (
+      {/* Coding Question Specifics */}
+      {type === "coding" && (
+        <div className="mb-4 animate-fade-in">
+          <div className="mb-3">
+            <label className="form-label text-muted small fw-bold text-uppercase ls-1">Target Language</label>
+            <select className="form-select border-0 bg-light shadow-sm" value={codeLanguage} onChange={(e) => setCodeLanguage(e.target.value)}>
+              <option value="javascript">JavaScript / Node.js</option>
+              <option value="python">Python</option>
+              <option value="java">Java</option>
+              <option value="cpp">C++</option>
+              <option value="csharp">C#</option>
+              <option value="html">HTML / CSS</option>
+              <option value="sql">SQL</option>
+              <option value="php">PHP</option>
+              <option value="ruby">Ruby</option>
+              <option value="all">Any / Pseudo-code</option>
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label text-muted small fw-bold text-uppercase ls-1">Starter Code / Template</label>
+            <textarea
+              className="form-control font-monospace small bg-dark text-light border-0"
+              rows="6"
+              value={starterCode}
+              onChange={(e) => setStarterCode(e.target.value)}
+              spellCheck="false"
+            ></textarea>
+            <div className="form-text small">This code will be presented to the student as a starting point.</div>
+          </div>
+        </div>
+      )}
+
+      {/* Answer Preview for Non-Quiz/Non-Coding */}
+      {(type === "short" || type === "long" || type === "abacus") && (
         <div className="mb-4">
           <label className="form-label text-muted small fw-bold text-uppercase ls-1">Answer Space Preview</label>
-          <div className="form-control bg-light text-muted fst-italic border-0" style={{ height: type === 'short' ? '80px' : '150px' }}>
-            Student answer area...
-          </div>
+          {type === 'abacus' ? (
+            <div className="d-flex align-items-center gap-3 p-3 bg-light rounded border border-secondary border-opacity-25">
+              <div className="fw-bold fs-4 text-dark font-monospace border-bottom border-dark px-3">
+                ?
+              </div>
+              <span className="text-muted fst-italic small">(Numeric Input Field)</span>
+            </div>
+          ) : (
+            <div className="form-control bg-light text-muted fst-italic border-0" style={{ height: type === 'short' ? '80px' : '150px' }}>
+              Student answer area...
+            </div>
+          )}
         </div>
       )}
 

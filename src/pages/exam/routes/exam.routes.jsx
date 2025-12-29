@@ -1,4 +1,4 @@
-import { Route } from "react-router-dom";
+import { Route, Navigate } from "react-router-dom";
 
 import ExamDashboard from "../dashboard/ExamDashboard";
 import QuestionBank from "../question-bank/QuestionBank";
@@ -9,8 +9,11 @@ import ExamReports from "../reports/ExamReports";
 import Leaderboard from "../leaderboard/Leaderboard";
 import ExamPaperView from "../preview/ExamPaperView";
 
+import ExamLayout from "../layouts/ExamLayout";
+
 const ExamRoutes = (
-  <>
+  <Route element={<ExamLayout />}>
+    <Route path="/" element={<Navigate to="dashboard" replace />} />
     <Route path="dashboard" element={<ExamDashboard />} />
     <Route path="question-bank" element={<QuestionBank />} />
     <Route path="create-exam" element={<CreateExam />} />
@@ -20,7 +23,7 @@ const ExamRoutes = (
     <Route path="reports" element={<ExamReports />} />
     <Route path="leaderboard" element={<Leaderboard />} />
     <Route path="view-paper/:id" element={<ExamPaperView />} />
-  </>
+  </Route>
 );
 
 export default ExamRoutes;

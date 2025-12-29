@@ -107,7 +107,11 @@ const FirstPage = () => {
 
           <button
             className="btn btn-theme btn-sm"
+<<<<<<< HEAD
+            onClick={() => navigate('/webinar/webinars?create=1')}
+=======
             onClick={() => navigate('/webinars?create=1')}
+>>>>>>> f57cca59b83f715f957a247c0ae7a4f9eaac2214
           >
             + Create
           </button>
@@ -156,7 +160,11 @@ const FirstPage = () => {
 
               <button
                 className="primary-btn fp-cta"
+<<<<<<< HEAD
+                onClick={() => navigate('/webinar/webinars?create=1&type=live')}
+=======
                 onClick={() => navigate('/webinars?create=1&type=live')}
+>>>>>>> f57cca59b83f715f957a247c0ae7a4f9eaac2214
               >
                 + Create your webinar
               </button>
@@ -218,11 +226,19 @@ const FirstPage = () => {
                         : `No ${activeFilter} webinars found`
                       }
                     </div>
+<<<<<<< HEAD
+                    {/* {!searchTerm && (
+                      <button className="secondary-btn" style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => navigate('/webinar/webinars?create=1')}>
+                        <FiPlus /> Schedule a Webinar
+                      </button>
+                    )} */}
+=======
                     {!searchTerm && (
                       <button className="secondary-btn" style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => navigate('/webinars?create=1')}>
                         <FiPlus /> Schedule a Webinar
                       </button>
                     )}
+>>>>>>> f57cca59b83f715f957a247c0ae7a4f9eaac2214
                   </div>
                 ) : (
                   <div className="fp-cards-grid">
