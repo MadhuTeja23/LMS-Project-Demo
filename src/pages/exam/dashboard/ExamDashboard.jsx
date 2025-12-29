@@ -86,10 +86,10 @@ const ExamDashboard = () => {
             <p className="text-secondary mb-0 small">Welcome back! Here's what's happening today.</p>
           </div>
           <div className="d-flex gap-2">
-            <Link to="/exam/question-bank" className="btn btn-white text-dark shadow-sm fw-medium d-flex align-items-center gap-2">
+            <Link to="/exams/question-bank" className="btn btn-white text-dark shadow-sm fw-medium d-flex align-items-center gap-2">
               <i className="bi bi-collection"></i> <span className="d-none d-sm-inline">Question Bank</span>
             </Link>
-            <Link to="/exam/create-exam" className="btn btn-primary shadow-sm fw-medium d-flex align-items-center gap-2">
+            <Link to="/exams/create-exam" className="btn btn-primary shadow-sm fw-medium d-flex align-items-center gap-2">
               <FaPlus size={12} /> <span>Create Exam</span>
             </Link>
           </div>
@@ -257,7 +257,7 @@ const ExamDashboard = () => {
               <table className="table table-hover align-middle mb-0">
                 <thead className="bg-light bg-opacity-50">
                   <tr className="text-secondary small text-uppercase fw-bold ls-1 border-bottom-0">
-                    <th className="ps-4 py-3 border-0" style={{ width: '100px' }}>Student Id</th>
+                    <th className="ps-4 py-3 border-0" style={{ width: '100px' }}>Student Idpco</th>
                     <th className="py-3 border-0">Exam Title</th>
                     <th className="py-3 border-0">Course</th>
                     <th className="py-3 border-0">Type</th>
@@ -305,12 +305,12 @@ const ExamDashboard = () => {
                           </td>
                           <td className="text-end pe-4">
                             <div className="d-flex justify-content-end gap-2">
-                              <Link to={`/exam/view-paper/${exam.id}`} className="btn btn-icon btn-sm btn-light text-primary" title="Preview">
+                              <Link to={`/exams/view-paper/${exam.id}`} className="btn btn-icon btn-sm btn-light text-primary" title="Preview">
                                 <FaEye />
                               </Link>
                               {!completed && (
                                 <>
-                                  <Link to={`/exam/edit-exam/${exam.id}`} className="btn btn-icon btn-sm btn-light text-secondary" title="Edit">
+                                  <Link to={`/exams/edit-exam/${exam.id}`} className="btn btn-icon btn-sm btn-light text-secondary" title="Edit">
                                     <FaEdit />
                                   </Link>
                                   <button onClick={() => handleDelete(exam.id)} className="btn btn-icon btn-sm btn-light text-danger" title="Delete">
@@ -359,12 +359,12 @@ const ExamDashboard = () => {
                     </div>
 
                     <div className="d-flex gap-2 w-100">
-                      <Link to={`/exam/view-paper/${exam.id}`} className="btn btn-light text-primary flex-fill d-flex align-items-center justify-content-center gap-2 py-2" title="Preview">
+                      <Link to={`/exams/view-paper/${exam.id}`} className="btn btn-light text-primary flex-fill d-flex align-items-center justify-content-center gap-2 py-2" title="Preview">
                         <FaEye /> <span className="small fw-bold">Preview</span>
                       </Link>
                       {!completed && (
                         <>
-                          <Link to={`/exam/edit-exam/${exam.id}`} className="btn btn-light text-secondary flex-fill d-flex align-items-center justify-content-center gap-2 py-2" title="Edit">
+                          <Link to={`/exams/edit-exam/${exam.id}`} className="btn btn-light text-secondary flex-fill d-flex align-items-center justify-content-center gap-2 py-2" title="Edit">
                             <FaEdit /> <span className="small fw-bold">Edit</span>
                           </Link>
                           <button onClick={() => handleDelete(exam.id)} className="btn btn-light text-danger flex-fill d-flex align-items-center justify-content-center gap-2 py-2" title="Delete">

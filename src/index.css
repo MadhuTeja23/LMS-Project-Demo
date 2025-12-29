@@ -5,7 +5,9 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -30,8 +32,8 @@ body {
   --card-bg: #0f172a;
   --sidebar-bg: #0b1220;
   --text-color: #e6eef8;
-  --hover-bg: rgba(230,238,248,0.06);
-  --border: rgba(255,255,255,0.06);
+  --hover-bg: rgba(230, 238, 248, 0.06);
+  --border: rgba(255, 255, 255, 0.06);
 }
 
 [data-theme="light"] {
@@ -43,8 +45,8 @@ body {
   --card-bg: #ffffff;
   --sidebar-bg: #ffffff;
   --text-color: #0f172a;
-  --hover-bg: rgba(15,23,42,0.04);
-  --border: rgba(15,23,42,0.06);
+  --hover-bg: rgba(15, 23, 42, 0.04);
+  --border: rgba(15, 23, 42, 0.06);
 }
 
 :root {
@@ -99,8 +101,8 @@ body {
     margin-left: 70px;
     transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
-  .sidebar-open ~ .dashboard-content {
+
+  .sidebar-open~.dashboard-content {
     margin-left: 220px;
   }
 }
@@ -109,8 +111,18 @@ body {
   .sidebar-closed {
     transform: translateX(-100%);
   }
-  
+
   .sidebar-open {
     transform: translateX(0);
+  }
+}
+
+/* Custom Sticky Utility for Large Screens Only */
+@media (min-width: 992px) {
+  .sticky-lg-top {
+    position: sticky;
+    top: 100px;
+    /* Matching the inline style previously used, can be overridden inline */
+    z-index: 1020;
   }
 }

@@ -26,7 +26,7 @@ const DashboardLayout = () => {
 
     updateMargin()
     window.addEventListener('resize', updateMargin)
-    
+
     // Watch for sidebar class changes
     const observer = new MutationObserver(updateMargin)
     if (sidebarRef.current) {
@@ -53,18 +53,17 @@ const DashboardLayout = () => {
   }, [])
 
   return (
-    <div className="d-flex min-vh-100 position-relative overflow-hidden" style={{ backgroundColor: 'var(--main-bg)' }}>
+    <div className="min-vh-100 position-relative overflow-hidden" style={{ backgroundColor: 'var(--main-bg)' }}>
       <div ref={sidebarRef}>
         <Sidebar />
       </div>
-      <div 
+      <div
         ref={contentRef}
-        className="flex-grow-1 d-flex flex-column min-w-0" 
-        style={{ 
-          backgroundColor: 'var(--content-bg)', 
-          transition: 'margin-left 0.3s ease', 
-          minHeight: '100vh', 
-          width: '100%'
+        className="flex-grow-1 d-flex flex-column min-w-0"
+        style={{
+          backgroundColor: 'var(--content-bg)',
+          transition: 'margin-left 0.3s ease',
+          minHeight: '100vh',
         }}
       >
         <Navbar />
@@ -72,22 +71,22 @@ const DashboardLayout = () => {
           <Outlet />
         </main>
       </div>
-      <div 
+      <div
         ref={chatSupportRef}
-        className="position-fixed rounded-circle d-flex align-items-center justify-content-center text-white shadow-lg" 
-        style={{ 
-          width: '56px', 
-          height: '56px', 
-          bottom: '24px', 
-          right: '24px', 
+        className="position-fixed rounded-circle d-flex align-items-center justify-content-center text-white shadow-lg"
+        style={{
+          width: '56px',
+          height: '56px',
+          bottom: '24px',
+          right: '24px',
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           cursor: 'pointer',
           zIndex: 1000,
           fontSize: '24px',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
         }}
-        data-bs-toggle="tooltip" 
-        data-bs-placement="top" 
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
         title="Chat Support"
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)'

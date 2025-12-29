@@ -1,36 +1,48 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import DashboardLayout from '../components/layout/DashboardLayOut'
-import Home from '../pages/Home/Home'
-import Courses from "../pages/Courses/Courses"
-import Webinar from '../pages/Webinar/Webinar'
-import Exams from '../pages/Exams/Exams'
-import Marketing from '../pages/Marketing/Marketing'
-import MyApp from '../pages/MyApp/MyApp'
-import Websites from '../pages/Websites/Websites'
-import Certificates from '../pages/Certificates/Certificates'
-import AffiliateMarketing from '../pages/AffiliateMarketing/AffiliateMarketing'
-import Users from '../pages/Users/Users'
+import React, { Suspense, lazy } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import DashboardLayout from '../components/layout/DashboardLayOut';
+import Loading from '../components/common/Loading';
 
-import Settings from '../pages/Settings/Settings'
+// Lazy Load Pages for Performance Optimization
+const Home = lazy(() => import('../pages/Home/Home'));
+const Courses = lazy(() => import('../pages/Courses/Courses'));
+const Webinar = lazy(() => import('../pages/Webinar/Webinar'));
+const Exams = lazy(() => import('../pages/exam/Exams'));
+const Marketing = lazy(() => import('../pages/Marketing/Marketing'));
+const MyApp = lazy(() => import('../pages/MyApp/MyApp'));
+const Websites = lazy(() => import('../pages/Websites/Websites'));
+const Certificates = lazy(() => import('../pages/Certificates/templates/Certificates'));
+const AffiliateMarketing = lazy(() => import('../pages/AffiliateMarketing/AffiliateMarketing'));
+const Users = lazy(() => import('../pages/Users/Users'));
+const Settings = lazy(() => import('../pages/Settings/Settings'));
+const NotFound = lazy(() => import('../pages/NotFound'));
+
 const AppRoutes = () => {
   return (
-    <Routes>
+    <Suspense fallback={<Loading />}>
+      <Routes>
+        {/* Main Application Routes wrapped in Dashboard Layout */}
+        <Route element={<DashboardLayout />}>
+          <Route path="/" element={<Home />} />
 
-      <Route  element={<DashboardLayout />}>
-        <Route path="/"  element={<Home />} />
-        <Route path="/courses" element={<Courses />} />
-        <Route path="/courses/*" element={<Navigate to="/courses" replace />} />
-        <Route path="/users" element={<Users />} />
-        <Route path="/exams"  element={<Exams />} />
-        <Route path="/webinar" element={<Webinar />} />
-        <Route path="/certificates" element={<Certificates />} />
-        <Route path="/marketing" element={<Marketing />} />
-        <Route path="/affiliatemarketing"  element={<AffiliateMarketing />} />
-        <Route path="/myapp" element={<MyApp />} />
-        <Route path="/websites" element={<Websites />} />
-        <Route path="/settings" element={<Settings />} />
-      </Route>
-    </Routes>
+          <Route path="/courses" element={<Courses />} />
+          <Route path="/courses/*" element={<Navigate to="/courses" replace />} />
+
+          <Route path="/users" element={<Users />} />
+          <Route path="/exams/*" element={<Exams />} />
+          <Route path="/webinar/*" element={<Webinar />} />
+          <Route path="/certificates" element={<Certificates />} />
+          <Route path="/marketing" element={<Marketing />} />
+          <Route path="/affiliatemarketing" element={<AffiliateMarketing />} />
+          <Route path="/myapp" element={<MyApp />} />
+          <Route path="/websites" element={<Websites />} />
+          <Route path="/settings" element={<Settings />} />
+
+          {/* Catch-all 404 Route */}
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    </Suspense>
   )
 }
 
