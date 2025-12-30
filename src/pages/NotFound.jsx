@@ -1,14 +1,27 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { FiHome, FiAlertTriangle } from 'react-icons/fi';
 
 const NotFound = () => {
     return (
-        <div className="d-flex flex-column justify-content-center align-items-center bg-light" style={{ minHeight: '80vh' }}>
-            <h1 className="display-1 fw-bold text-primary">404</h1>
-            <p className="lead text-muted mb-4">Oops! The page you're looking for doesn't exist.</p>
-            <Link to="/" className="btn btn-primary px-4 py-2 rounded-pill">
-                <i className="bi bi-house-door me-2"></i>Go Home
-            </Link>
+        <div style={{
+            height: '80vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            color: '#1e293b'
+        }}>
+            <FiAlertTriangle size={64} color="#f59e0b" style={{ marginBottom: 24, opacity: 0.8 }} />
+            <h1 style={{ fontSize: '3rem', fontWeight: 800, margin: 0, lineHeight: 1 }}>404</h1>
+            <h2 style={{ fontSize: '1.5rem', marginTop: 16 }}>Page Not Found</h2>
+            <p style={{ color: '#64748b', maxWidth: 400, marginTop: 12 }}>
+                Oops! The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+            </p>
+            <NavLink to="/" className="btn-primary" style={{ marginTop: 32, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <FiHome /> Back to Dashboard
+            </NavLink>
         </div>
     );
 };

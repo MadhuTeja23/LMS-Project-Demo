@@ -100,14 +100,30 @@ const ExamPaperView = () => {
     }
 
     const isCodingTheme = exam.type === 'coding' || exam.questions.some(q => q.type === 'coding');
+    // Live Exam Rule: No Background Image, but Watermark permitted
+    const watermark = exam.customAssets?.watermark;
+    const watermarkOpacity = exam.customAssets?.watermarkOpacity || 0.1;
 
     return (
-        <div className="min-vh-100 pb-5" style={{
+        <div className="min-vh-100 pb-5 position-relative" style={{
             fontFamily: "'Inter', sans-serif",
             background: isCodingTheme ? "#0f172a" : "#f8f9fa",
             color: isCodingTheme ? "#e2e8f0" : "#212529"
         }}>
             <ToastContainer />
+
+            {/* Watermark (Live Exam Mode) */}
+            {watermark && (
+                <div className="position-fixed top-50 start-50 translate-middle pointer-events-none user-select-none"
+                    style={{
+                        zIndex: 0,
+                        opacity: watermarkOpacity,
+                        width: '50%',
+                        pointerEvents: 'none'
+                    }}>
+                    <img src={watermark} alt="" className="img-fluid opacity-50" />
+                </div>
+            )}
 
             {/* Sticky Header with Timer */}
             <div className={`sticky-top shadow-sm px-4 py-3 d-flex justify-content-between align-items-center ${isCodingTheme ? 'bg-dark border-bottom border-secondary' : 'bg-white'}`} style={{ zIndex: 1020 }}>
@@ -126,7 +142,7 @@ const ExamPaperView = () => {
                 )}
             </div>
 
-            <div className="container py-5" style={{ maxWidth: '900px' }}>
+            <div className="container py-5 position-relative" style={{ maxWidth: '900px', zIndex: 1 }}>
 
                 {/* Intro Card */}
                 {!submitted && (
@@ -311,3 +327,4 @@ const ExamPaperView = () => {
 };
 
 export default ExamPaperView;
+

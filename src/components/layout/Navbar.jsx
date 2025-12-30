@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-const Navbar = () => {
+const Navbar = ({ toggleSidebar }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
 
   useEffect(() => {
@@ -11,77 +11,45 @@ const Navbar = () => {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  const handleMenuClick = () => {
-    const sidebar = document.querySelector('.sidebar')
-    if (sidebar) {
-      const isOpen = sidebar.classList.contains('sidebar-open')
-      // Toggle the sidebar
-      if (isOpen) {
-        sidebar.classList.remove('sidebar-open')
-        sidebar.classList.add('sidebar-closed')
-      } else {
-        sidebar.classList.remove('sidebar-closed')
-        sidebar.classList.add('sidebar-open')
-      }
-    }
-  }
-
   return (
-    <header 
-      className="navbar navbar-expand-lg sticky-top shadow-sm" 
-      style={{ 
-        minHeight: '64px',
-        backgroundColor: 'var(--surface)',
-        borderBottom: '1px solid var(--border)'
-      }}
+    <header
+      className="navbar navbar-expand-lg sticky-top bg-white border-bottom px-4"
+      style={{ height: '64px', zIndex: 1020 }}
     >
-      <div className="container-fluid px-3">
-        <div className="d-flex align-items-center justify-content-between w-100">
-          {isMobile && (
-            <button 
-              className="btn btn-link d-lg-none p-2"
-              onClick={handleMenuClick}
-              aria-label="Toggle menu"
-              type="button"
-            >
-              <i className="bi bi-list fs-4"></i>
-            </button>
-          )}
-          <div className="navbar-brand mb-0">
-            <h4 
-              className="mb-0 fw-bold"
-              style={{
-                background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}
-            >
-              Admin Panel
-            </h4>
-          </div>
-          <div className="d-flex align-items-center gap-2">
-            <button 
-              className="btn btn-link position-relative p-2" 
-              title="Notifications"
-              type="button"
-            >
-              <i className="bi bi-bell fs-5"></i>
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.6rem' }}>
-                3
-              </span>
-            </button>
-            <button 
-              className="btn btn-link p-2" 
-              title="Profile"
-              type="button"
-            >
-              <i className="bi bi-person-circle fs-4"></i>
-            </button>
-          </div>
+      <div className="d-flex align-items-center justify-content-between w-100">
+        <button
+          className="btn btn-light border-0 me-3 d-lg-none"
+          onClick={toggleSidebar}
+          aria-label="Toggle menu"
+          type="button"
+        >
+          <i className="bi bi-list fs-4"></i>
+        </button>
+        <div className="navbar-brand mb-0 fs-6 text-secondary fw-medium">
+          {/* Dynamic Breadcrumbs could go here */}
+          Dashboard
+        </div>
+        <div className="d-flex align-items-center gap-2">
+          <button
+            className="btn btn-link position-relative p-2"
+            title="Notifications"
+            type="button"
+          >
+            <i className="bi bi-bell fs-5"></i>
+            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.6rem' }}>
+              3
+            </span>
+          </button>
+          <button
+            className="btn btn-link p-2"
+            title="Profile"
+            type="button"
+          >
+            <i className="bi bi-person-circle fs-4"></i>
+          </button>
         </div>
       </div>
-    </header>
+    </header >
   )
 }
 

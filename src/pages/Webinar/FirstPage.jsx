@@ -4,11 +4,10 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import LiveCard from './LiveCard'
 import UpcomingCard from './UpcomingCard'
 import RecordedCard from './RecordedCard'
-import { FiSearch, FiPlus, FiCalendar, FiVideo, FiRadio, FiInbox, FiUsers, FiDollarSign, FiPlayCircle } from 'react-icons/fi'
+import { FiSearch, FiPlus, FiCalendar, FiVideo, FiRadio, FiInbox, FiLayout } from 'react-icons/fi'
 
 const FirstPage = () => {
   const navigate = useNavigate()
-  const [items, setItems] = useState([])
   const location = useLocation()
 
   // Initialize filter from URL if present, else default to 'upcoming'
@@ -21,10 +20,10 @@ const FirstPage = () => {
 
   const [activeFilter, setActiveFilter] = useState(getInitialFilter())
   const [searchTerm, setSearchTerm] = useState('')
+  const [items, setItems] = useState([])
   const [counts, setCounts] = useState({ live: 0, upcoming: 0, recorded: 0 })
   const [loadError, setLoadError] = useState(null)
 
-  // Also update filter if URL changes while mounted
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     const f = params.get('filter')
@@ -47,7 +46,7 @@ const FirstPage = () => {
           let parsed = JSON.parse(raw)
           if (parsed) {
             // Re-eval status
-            if (parsed.dateTime && parsed.duration) {
+            if (parsed.dateTime) {
               const start = new Date(parsed.dateTime)
               const durationMs = (parseInt(parsed.duration, 10) || 30) * 60 * 1000
               const end = new Date(start.getTime() + durationMs)
@@ -78,9 +77,6 @@ const FirstPage = () => {
       })
 
       setCounts(grouped)
-
-      // If current filter has no items but others do, maybe switch? (Optional UX improvement, keeping simple for now)
-
     } catch (err) {
       setLoadError(err.message || String(err))
     }
@@ -95,172 +91,148 @@ const FirstPage = () => {
 
   const hasAny = counts.live + counts.upcoming + counts.recorded > 0
 
+  const filteredItems = searchTerm
+    ? items.filter(i => (i.title || '').toLowerCase().includes(searchTerm.toLowerCase()))
+    : items.filter(i => i.type === activeFilter)
+
   return (
     <div className="firstpage-container">
-
-      {/* ===== TOP NAVBAR (ONLY NEW PART) ===== */}
-      <nav className="navbar navbar-light bg-white border-bottom">
-        <div className="container-fluid px-3">
-          <span className="navbar-brand mb-0 h6 fw-semibold text-dark">
-            Webinars
-          </span>
-
-          <button
-            className="btn btn-theme btn-sm"
-<<<<<<< HEAD
-            onClick={() => navigate('/webinar/webinars?create=1')}
-=======
-            onClick={() => navigate('/webinars?create=1')}
->>>>>>> f57cca59b83f715f957a247c0ae7a4f9eaac2214
-          >
-            + Create
-          </button>
+      {/* Navbar */}
+      <nav className="fp-navbar">
+        <div className="fp-brand">
+          <FiLayout size={24} color="#3b82f6" />
+          <span>Webinars</span>
         </div>
+        <button
+          className="btn-theme"
+          onClick={() => navigate('/webinar/webinars?create=1')}
+        >
+          <FiPlus size={18} />
+          Create Webinar
+        </button>
       </nav>
 
-      {/* ===== EXISTING CONTENT (UNCHANGED) ===== */}
-      <div className="fp-box">
-        <main className="fp-main">
+      <main className="fp-main">
+        {loadError && (
+          <div style={{ background: '#fee2e2', color: '#991b1b', padding: 16, borderRadius: 12, marginBottom: 24 }}>
+            Error loading webinars: {loadError}
+          </div>
+        )}
 
-          {loadError && (
-            <div style={{ background: '#fee', color: '#601', padding: 12, borderRadius: 8, marginBottom: 12 }}>
-              Error loading webinars: {loadError}
+        {!hasAny ? (
+          <div className="fp-hero">
+            <h1 className="fp-hero-title">Grow your audience with Webinars</h1>
+            <p style={{ fontSize: 18, color: '#64748b', maxWidth: 600, margin: '0 auto 40px', lineHeight: 1.6 }}>
+              Host engaging live sessions, schedule upcoming events, and share recordings with your audience appropriately.
+            </p>
+
+            <button
+              className="fp-cta"
+              onClick={() => navigate('/webinar/webinars?create=1&type=live')}
+            >
+              Start Your First Webinar
+            </button>
+
+            <div className="fp-features">
+              <div className="fp-feature">
+                <div style={{ background: '#dbeafe', width: 48, height: 48, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <FiRadio size={24} color="#2563eb" />
+                </div>
+                <h4>Go Live Instantly</h4>
+                <p>Launch live sessions to connect with your students in real-time.</p>
+              </div>
+              <div className="fp-feature">
+                <div style={{ background: '#ede9fe', width: 48, height: 48, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <FiCalendar size={24} color="#7c3aed" />
+                </div>
+                <h4>Schedule Events</h4>
+                <p>Plan ahead and let your audience register for upcoming sessions.</p>
+              </div>
+              <div className="fp-feature">
+                <div style={{ background: '#f1f5f9', width: 48, height: 48, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <FiVideo size={24} color="#475569" />
+                </div>
+                <h4>Automated Recordings</h4>
+                <p>Never miss a moment. All sessions are recorded for future viewing.</p>
+              </div>
             </div>
-          )}
-
-          {!hasAny ? (
-            <>
-              <h1 className="fp-heading">Your trusted lead generator</h1>
-
-              <div className="fp-features">
-                <div className="fp-feature">
-                  <span className="fp-icon"></span>
-                  <div>
-                    <h4>Host free webinars to expand your lead pool</h4>
-                    <p>Your go-to traction channel to collect the maximum number of leads</p>
+          </div>
+        ) : (
+          <div className="fp-dashboard">
+            <div className="fp-dashboard-header">
+              <div className="fp-header-top">
+                <h1 className="fp-heading">Your Webinars</h1>
+                <div className="fp-controls">
+                  <div className="fp-filter-bar">
+                    <button
+                      className={`fp-filter-btn ${activeFilter === 'live' ? 'active' : ''}`}
+                      onClick={() => setActiveFilter('live')}
+                    >
+                      <FiRadio /> Live
+                      <span className="fp-filter-count">{counts['live']}</span>
+                    </button>
+                    <button
+                      className={`fp-filter-btn ${activeFilter === 'upcoming' ? 'active' : ''}`}
+                      onClick={() => setActiveFilter('upcoming')}
+                    >
+                      <FiCalendar /> Upcoming
+                      <span className="fp-filter-count">{counts['upcoming']}</span>
+                    </button>
+                    <button
+                      className={`fp-filter-btn ${activeFilter === 'recorded' ? 'active' : ''}`}
+                      onClick={() => setActiveFilter('recorded')}
+                    >
+                      <FiVideo /> Recorded
+                      <span className="fp-filter-count">{counts['recorded']}</span>
+                    </button>
                   </div>
-                </div>
 
-                <div className="fp-feature">
-                  <span className="fp-icon"></span>
-                  <div>
-                    <h4>Find your best leads with paid webinars</h4>
-                    <p>Easily double down on your ROI maximizing leads</p>
-                  </div>
-                </div>
-
-                <div className="fp-feature">
-                  <span className="fp-icon"></span>
-                  <div>
-                    <h4>Instantly accessible webinar recordings</h4>
-                    <p>Your content is always repurposable and up for sale</p>
+                  <div className="fp-search-wrapper">
+                    <FiSearch className="fp-search-icon" />
+                    <input
+                      type="text"
+                      placeholder="Search webinars..."
+                      className="fp-search-input"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                   </div>
                 </div>
               </div>
+            </div>
 
-              <button
-                className="primary-btn fp-cta"
-<<<<<<< HEAD
-                onClick={() => navigate('/webinar/webinars?create=1&type=live')}
-=======
-                onClick={() => navigate('/webinars?create=1&type=live')}
->>>>>>> f57cca59b83f715f957a247c0ae7a4f9eaac2214
-              >
-                + Create your webinar
-              </button>
-            </>
-          ) : (
-            <div className="fp-dashboard">
-              <div className="fp-dashboard-header">
-                <h1 className="fp-heading" style={{ marginBottom: 0 }}>Your Webinars</h1>
-
-                {/* Search Input */}
-                <div className="fp-search-wrapper">
-                  <FiSearch className="fp-search-icon" />
-                  <input
-                    type="text"
-                    placeholder="Search webinars..."
-                    className="fp-search-input"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+            <div className="fp-content-area">
+              {filteredItems.length === 0 ? (
+                <div className="fp-empty-state">
+                  <FiInbox className="fp-empty-icon" />
+                  <h3>No {searchTerm ? 'matching' : activeFilter} webinars found</h3>
+                  <p>
+                    {searchTerm
+                      ? `We couldn't find any webinars matching "${searchTerm}"`
+                      : `You don't have any ${activeFilter} webinars yet.`}
+                  </p>
+                  {!searchTerm && (
+                    <button className="secondary-btn" style={{ marginTop: 20 }} onClick={() => navigate('/webinar/webinars?create=1')}>
+                      Create New Webinar
+                    </button>
+                  )}
                 </div>
-              </div>
-
-              {!searchTerm && (
-                <div className="fp-filter-bar">
-                  <button
-                    className={`fp-filter-btn ${activeFilter === 'live' ? 'active' : ''}`}
-                    onClick={() => setActiveFilter('live')}
-                  >
-                    <FiRadio /> Live
-                    <span className="fp-filter-count">({counts['live']})</span>
-                  </button>
-                  <button
-                    className={`fp-filter-btn ${activeFilter === 'upcoming' ? 'active' : ''}`}
-                    onClick={() => setActiveFilter('upcoming')}
-                  >
-                    <FiCalendar /> Upcoming
-                    <span className="fp-filter-count">({counts['upcoming']})</span>
-                  </button>
-                  <button
-                    className={`fp-filter-btn ${activeFilter === 'recorded' ? 'active' : ''}`}
-                    onClick={() => setActiveFilter('recorded')}
-                  >
-                    <FiVideo /> Recorded
-                    <span className="fp-filter-count">({counts['recorded']})</span>
-                  </button>
+              ) : (
+                <div className="fp-cards-grid">
+                  {filteredItems.map(item => (
+                    <div key={item.id}>
+                      {item.type === 'live' && <LiveCard item={item} />}
+                      {item.type === 'upcoming' && <UpcomingCard item={item} />}
+                      {item.type === 'recorded' && <RecordedCard item={item} />}
+                    </div>
+                  ))}
                 </div>
               )}
-
-              <div className="fp-content-area">
-                {(searchTerm
-                  ? items.filter(i => (i.title || '').toLowerCase().includes(searchTerm.toLowerCase()))
-                  : items.filter(i => i.type === activeFilter)
-                ).length === 0 ? (
-                  <div className="fp-empty-state">
-                    <FiInbox style={{ fontSize: 48, marginBottom: 16, color: '#cbd5e1' }} />
-                    <div>
-                      {searchTerm
-                        ? `No webinars found matching "${searchTerm}"`
-                        : `No ${activeFilter} webinars found`
-                      }
-                    </div>
-<<<<<<< HEAD
-                    {/* {!searchTerm && (
-                      <button className="secondary-btn" style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => navigate('/webinar/webinars?create=1')}>
-                        <FiPlus /> Schedule a Webinar
-                      </button>
-                    )} */}
-=======
-                    {!searchTerm && (
-                      <button className="secondary-btn" style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => navigate('/webinars?create=1')}>
-                        <FiPlus /> Schedule a Webinar
-                      </button>
-                    )}
->>>>>>> f57cca59b83f715f957a247c0ae7a4f9eaac2214
-                  </div>
-                ) : (
-                  <div className="fp-cards-grid">
-                    {(searchTerm
-                      ? items.filter(i => (i.title || '').toLowerCase().includes(searchTerm.toLowerCase()))
-                      : items.filter(i => i.type === activeFilter)
-                    ).map(item => (
-                      <div key={item.id} className="fp-list-item-wrapper">
-                        {item.type === 'live' && <LiveCard item={item} />}
-                        {item.type === 'upcoming' && <UpcomingCard item={item} />}
-                        {item.type === 'recorded' && <RecordedCard item={item} />}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
-          )}
-
-
-        </main>
-      </div >
+          </div>
+        )
+        }
+      </main >
     </div >
   )
 }

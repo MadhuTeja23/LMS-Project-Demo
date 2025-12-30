@@ -136,9 +136,151 @@ const DesignStudio = ({
                         </div>
 
                         <div className="mb-3">
+                            <label className="form-label small fw-bold mb-1">Page Orientation</label>
+                            <div className="btn-group w-100" role="group">
+                                <button
+                                    type="button"
+                                    className={`btn btn-sm ${editingTemplate.page.orientation === 'landscape' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                                    onClick={() => setEditingTemplate({ ...editingTemplate, page: { ...editingTemplate.page, orientation: 'landscape' } })}
+                                >
+                                    Landscape
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`btn btn-sm ${editingTemplate.page.orientation === 'portrait' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                                    onClick={() => setEditingTemplate({ ...editingTemplate, page: { ...editingTemplate.page, orientation: 'portrait' } })}
+                                >
+                                    Portrait
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="mb-3">
                             <label className="form-label small fw-bold mb-1">Background Image</label>
                             <input type="file" className="form-control form-control-sm" accept="image/*" onChange={handleBgUpload} />
                         </div>
+
+                        <div className="mb-3">
+                            <div className="form-check form-switch mb-1">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id="enableWatermark"
+                                    checked={editingTemplate.theme.showWatermark || false}
+                                    onChange={e => updateTheme('showWatermark', e.target.checked)}
+                                />
+                                <label className="form-check-label small fw-bold" htmlFor="enableWatermark">Enable Watermark</label>
+                            </div>
+                            {editingTemplate.theme.showWatermark && (
+                                <>
+                                    <input
+                                        type="text"
+                                        className="form-control form-control-sm mt-1"
+                                        placeholder="Watermark Text (e.g. DRAFT)"
+                                        value={editingTemplate.theme.watermarkText || ''}
+                                        onChange={e => updateTheme('watermarkText', e.target.value)}
+                                    />
+                                    <div className="mt-2">
+                                        <label className="form-label small fw-bold mb-1">Watermark Orientation</label>
+                                        <select
+                                            className="form-select form-select-sm"
+                                            value={editingTemplate.theme.watermarkOrientation || 'diagonal'}
+                                            onChange={e => updateTheme('watermarkOrientation', e.target.value)}
+                                        >
+                                            <option value="diagonal">Diagonal</option>
+                                            <option value="horizontal">Horizontal</option>
+                                            <option value="vertical">Vertical</option>
+                                        </select>
+                                    </div>
+                                </>
+                            )}
+
+                            <div className="form-check form-switch mt-2">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id="enableLogoWatermark"
+                                    checked={editingTemplate.theme.showLogoWatermark || false}
+                                    onChange={e => updateTheme('showLogoWatermark', e.target.checked)}
+                                />
+                                <label className="form-check-label small fw-bold" htmlFor="enableLogoWatermark">Use Logo Watermark</label>
+                            </div>
+                        </div>
+
+                        <div className="mb-3">
+                            <label className="form-label small fw-bold mb-1">Border Frame (Image)</label>
+                            <input type="file" className="form-control form-control-sm" accept="image/*" onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (ev) => updateTheme('borderImage', ev.target.result);
+                                    reader.readAsDataURL(file);
+                                }
+                            }} />
+                        </div>
+
+                        <div className="mb-3">
+                            <label className="form-label small fw-bold mb-1">Border Style Preset</label>
+                            <select
+                                className="form-select form-select-sm"
+                                value={editingTemplate.theme.borderPreset || ''}
+                                onChange={e => updateTheme('borderPreset', e.target.value)}
+                            >
+                                <option value="">None / Custom Simple</option>
+                                <option value="classic">Classic (Double Line)</option>
+                                <option value="artdeco">Art Deco (Heavy Top/Bottom)</option>
+                                <option value="modern">Modern (Sidebar)</option>
+                                <option value="vintage">Vintage (Inset Box)</option>
+                            </select>
+                        </div>
+
+                        {!editingTemplate.theme.borderPreset && (
+                            <div className="row g-2 mb-3">
+                                <label className="form-label small fw-bold mb-0">Simple Border</label>
+                                <div className="col-4">
+                                    <input
+                                        type="number"
+                                        className="form-control form-control-sm"
+                                        placeholder="Width"
+                                        value={editingTemplate.theme.borderWidth || 0}
+                                        onChange={e => updateTheme('borderWidth', e.target.value)}
+                                    />
+                                </div>
+                                <div className="col-4">
+                                    <select
+                                        className="form-select form-select-sm"
+                                        value={editingTemplate.theme.borderStyle || 'solid'}
+                                        onChange={e => updateTheme('borderStyle', e.target.value)}
+                                    >
+                                        <option value="solid">Solid</option>
+                                        <option value="double">Double</option>
+                                        <option value="dashed">Dashed</option>
+                                        <option value="dotted">Dotted</option>
+                                    </select>
+                                </div>
+                                <div className="col-4">
+                                    <input
+                                        type="color"
+                                        className="form-control form-control-sm form-control-color w-100"
+                                        value={editingTemplate.theme.borderColor || '#000000'}
+                                        onChange={e => updateTheme('borderColor', e.target.value)}
+                                        title="Border Color"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {editingTemplate.theme.borderPreset && (
+                            <div className="mb-3">
+                                <label className="form-label small fw-bold mb-1">Preset Color</label>
+                                <input
+                                    type="color"
+                                    className="form-control form-control-sm form-control-color w-100"
+                                    value={editingTemplate.theme.borderColor || '#000000'}
+                                    onChange={e => updateTheme('borderColor', e.target.value)}
+                                />
+                            </div>
+                        )}
 
                         <div>
                             <label className="form-label small fw-bold mb-1">Base Font</label>

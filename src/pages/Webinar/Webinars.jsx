@@ -108,11 +108,7 @@ const Webinars = () => {
             window.dispatchEvent(new Event('webinar-added'));
         } catch (err) { console.error(err) }
 
-<<<<<<< HEAD
         navigate(`/webinar?filter=${autoType}`);
-=======
-        navigate(`/?filter=${autoType}`);
->>>>>>> f57cca59b83f715f957a247c0ae7a4f9eaac2214
     }
 
     const onCoverChange = (e) => {

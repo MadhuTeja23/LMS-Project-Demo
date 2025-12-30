@@ -1,26 +1,58 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { FiCalendar, FiClock, FiUsers, FiArrowRight } from 'react-icons/fi'
 import './Webinars.css'
 
 const LiveCard = ({ item }) => {
   const navigate = useNavigate()
   return (
     <motion.div
-      className="class-item webinar-card"
-      whileHover={{ y: -5, boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}
-      transition={{ type: 'spring', stiffness: 300 }}
+      className="webinar-card-premium"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -8 }}
     >
-      {item.cover && <div className="card-cover"><img src={item.cover} alt="cover" /></div>}
-      <div style={{ padding: '10px' }}>
-        <div className="ci-title">{item.title}</div>
-        <div className="ci-time">{item.dateTime ? new Date(item.dateTime).toLocaleString() : 'No date'}</div>
-        <div className="ci-notes">{item.notes && item.notes.slice(0, 120)}</div>
-        <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <span style={{ fontSize: 12, color: '#0f172a', fontWeight: 600 }}>Live</span>
-            {item.memberLimit && <div style={{ fontSize: 12, color: '#64748b' }}>Limit: {item.memberLimit}</div>}
+      <div className="wc-image-container">
+        <span className="wc-badge live">Live Now</span>
+        {item.cover ? (
+          <img src={item.cover} alt={item.title} className="wc-image" />
+        ) : (
+          <div style={{ width: '100%', height: '100%', background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f87171' }}>
+            No Cover
           </div>
-          <button className="btn" onClick={() => navigate(`/webinar/${item.id}`, { state: { item } })}>View</button>
+        )}
+      </div>
+
+      <div className="wc-content">
+        <h3 className="wc-title">{item.title}</h3>
+
+        <div className="wc-meta">
+          <div className="wc-meta-item">
+            <FiCalendar size={14} />
+            {item.dateTime ? new Date(item.dateTime).toLocaleDateString() : 'Today'}
+          </div>
+          <div className="wc-meta-item">
+            <FiClock size={14} />
+            {item.dateTime ? new Date(item.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now'}
+          </div>
+        </div>
+
+        <p className="wc-description">
+          {item.notes || 'This webinar is currently live! Join now to participate.'}
+        </p>
+
+        <div className="wc-footer">
+          <div className="wc-user-limit">
+            <FiUsers size={14} />
+            <span>Limit: {item.memberLimit || 100}</span>
+          </div>
+          <button
+            className="wc-button"
+            style={{ background: '#dc2626', color: '#fff', borderColor: '#dc2626' }}
+            onClick={() => navigate(`/webinar/${item.id}`, { state: { item } })}
+          >
+            Join Now
+          </button>
         </div>
       </div>
     </motion.div>
