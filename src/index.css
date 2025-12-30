@@ -126,3 +126,10 @@ body {
     z-index: 1020;
   }
 }
+
+/* Custom Responsive Utilities */
+@media (min-width: 768px) {
+  .w-md-auto {
+    width: auto !important;
+  }
+}

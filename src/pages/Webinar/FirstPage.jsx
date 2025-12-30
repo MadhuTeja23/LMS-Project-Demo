@@ -1,22 +1,21 @@
-import './FirstPage.css'
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import LiveCard from './LiveCard'
 import UpcomingCard from './UpcomingCard'
 import RecordedCard from './RecordedCard'
-import { FiSearch, FiPlus, FiCalendar, FiVideo, FiRadio, FiInbox, FiUsers, FiDollarSign, FiPlayCircle } from 'react-icons/fi'
+import { FiSearch, FiPlus } from 'react-icons/fi'
 
 const FirstPage = () => {
   const navigate = useNavigate()
   const [items, setItems] = useState([])
   const location = useLocation()
 
-  // Initialize filter from URL if present, else default to 'upcoming'
+  // Initialize filter from URL if present, else default to 'all'
   const getInitialFilter = () => {
     const params = new URLSearchParams(location.search)
     const f = params.get('filter')
     if (f && ['live', 'upcoming', 'recorded'].includes(f)) return f
-    return 'upcoming'
+    return 'all'
   }
 
   const [activeFilter, setActiveFilter] = useState(getInitialFilter())
@@ -24,7 +23,6 @@ const FirstPage = () => {
   const [counts, setCounts] = useState({ live: 0, upcoming: 0, recorded: 0 })
   const [loadError, setLoadError] = useState(null)
 
-  // Also update filter if URL changes while mounted
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     const f = params.get('filter')
@@ -79,8 +77,6 @@ const FirstPage = () => {
 
       setCounts(grouped)
 
-      // If current filter has no items but others do, maybe switch? (Optional UX improvement, keeping simple for now)
-
     } catch (err) {
       setLoadError(err.message || String(err))
     }
@@ -93,175 +89,108 @@ const FirstPage = () => {
     return () => window.removeEventListener('webinar-added', handler)
   }, [location.pathname])
 
-  const hasAny = counts.live + counts.upcoming + counts.recorded > 0
+  const hasAny = items.length > 0;
+
+  const filteredItems = items.filter(item => {
+    const matchesSearch = (item.title || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = activeFilter === 'all' || item.type === activeFilter;
+    return matchesSearch && matchesFilter;
+  });
 
   return (
-    <div className="firstpage-container">
+    <div className="container-fluid py-4">
 
-      {/* ===== TOP NAVBAR (ONLY NEW PART) ===== */}
-      <nav className="navbar navbar-light bg-white border-bottom">
-        <div className="container-fluid px-3">
-          <span className="navbar-brand mb-0 h6 fw-semibold text-dark">
-            Webinars
-          </span>
-
-          <button
-            className="btn btn-theme btn-sm"
-<<<<<<< HEAD
-            onClick={() => navigate('/webinar/webinars?create=1')}
-=======
-            onClick={() => navigate('/webinars?create=1')}
->>>>>>> f57cca59b83f715f957a247c0ae7a4f9eaac2214
-          >
-            + Create
-          </button>
+      {/* Empty State */}
+      {!hasAny && (
+        <div className="row justify-content-center">
+          <div className="col-12 col-md-8 col-lg-6">
+            <div className="card shadow-sm border-0 text-center">
+              <div className="card-body p-5">
+                <h2 className="text-primary fw-bold mb-3">Webinar Management </h2>
+                <div className="text-muted mb-4">
+                  <p className="mb-2">
+                    🚀 Host free webinars to expand your lead pool or find your best leads with paid webinars.
+                  </p>
+                  <p className="mb-2">
+                    ✨ Create and publish new webinars to get started.
+                  </p>
+                </div>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => navigate('/webinar/webinars?create=1')}
+                >
+                  <FiPlus className="me-2" /> Schedule a Webinar
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </nav>
+      )}
 
-      {/* ===== EXISTING CONTENT (UNCHANGED) ===== */}
-      <div className="fp-box">
-        <main className="fp-main">
+      {/* Header & Dashboard */}
+      {hasAny && (
+        <>
+          <div className="row g-3 mb-4">
+            <div className="col-12 col-md-5">
+              <div className="input-group">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search webinars..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
+                <span className="input-group-text">
+                  <FiSearch />
+                </span>
+              </div>
+            </div>
+            <div className="col-12 col-md-3">
+              <select
+                className="form-select"
+                value={activeFilter}
+                onChange={e => setActiveFilter(e.target.value)}
+              >
+                <option value="all">All Webinars</option>
+                <option value="live">Live ({counts.live})</option>
+                <option value="upcoming">Upcoming ({counts.upcoming})</option>
+                <option value="recorded">Recorded ({counts.recorded})</option>
+              </select>
+            </div>
+            <div className="col-12 col-md-4 text-md-end">
+              <button
+                className="btn btn-success w-100 w-md-auto"
+                onClick={() => navigate('/webinar/webinars?create=1')}
+              >
+                <FiPlus className="me-2" /> Schedule Webinar
+              </button>
+            </div>
+          </div>
 
           {loadError && (
-            <div style={{ background: '#fee', color: '#601', padding: 12, borderRadius: 8, marginBottom: 12 }}>
-              Error loading webinars: {loadError}
-            </div>
+            <div className="alert alert-danger">{loadError}</div>
           )}
 
-          {!hasAny ? (
-            <>
-              <h1 className="fp-heading">Your trusted lead generator</h1>
-
-              <div className="fp-features">
-                <div className="fp-feature">
-                  <span className="fp-icon"></span>
-                  <div>
-                    <h4>Host free webinars to expand your lead pool</h4>
-                    <p>Your go-to traction channel to collect the maximum number of leads</p>
-                  </div>
-                </div>
-
-                <div className="fp-feature">
-                  <span className="fp-icon"></span>
-                  <div>
-                    <h4>Find your best leads with paid webinars</h4>
-                    <p>Easily double down on your ROI maximizing leads</p>
-                  </div>
-                </div>
-
-                <div className="fp-feature">
-                  <span className="fp-icon"></span>
-                  <div>
-                    <h4>Instantly accessible webinar recordings</h4>
-                    <p>Your content is always repurposable and up for sale</p>
-                  </div>
-                </div>
+          <div className="row g-4">
+            {filteredItems.length === 0 ? (
+              <div className="col-12 text-center py-5">
+                <div className="text-muted">🔍 No webinars found matching your criteria.</div>
               </div>
-
-              <button
-                className="primary-btn fp-cta"
-<<<<<<< HEAD
-                onClick={() => navigate('/webinar/webinars?create=1&type=live')}
-=======
-                onClick={() => navigate('/webinars?create=1&type=live')}
->>>>>>> f57cca59b83f715f957a247c0ae7a4f9eaac2214
-              >
-                + Create your webinar
-              </button>
-            </>
-          ) : (
-            <div className="fp-dashboard">
-              <div className="fp-dashboard-header">
-                <h1 className="fp-heading" style={{ marginBottom: 0 }}>Your Webinars</h1>
-
-                {/* Search Input */}
-                <div className="fp-search-wrapper">
-                  <FiSearch className="fp-search-icon" />
-                  <input
-                    type="text"
-                    placeholder="Search webinars..."
-                    className="fp-search-input"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {!searchTerm && (
-                <div className="fp-filter-bar">
-                  <button
-                    className={`fp-filter-btn ${activeFilter === 'live' ? 'active' : ''}`}
-                    onClick={() => setActiveFilter('live')}
-                  >
-                    <FiRadio /> Live
-                    <span className="fp-filter-count">({counts['live']})</span>
-                  </button>
-                  <button
-                    className={`fp-filter-btn ${activeFilter === 'upcoming' ? 'active' : ''}`}
-                    onClick={() => setActiveFilter('upcoming')}
-                  >
-                    <FiCalendar /> Upcoming
-                    <span className="fp-filter-count">({counts['upcoming']})</span>
-                  </button>
-                  <button
-                    className={`fp-filter-btn ${activeFilter === 'recorded' ? 'active' : ''}`}
-                    onClick={() => setActiveFilter('recorded')}
-                  >
-                    <FiVideo /> Recorded
-                    <span className="fp-filter-count">({counts['recorded']})</span>
-                  </button>
-                </div>
-              )}
-
-              <div className="fp-content-area">
-                {(searchTerm
-                  ? items.filter(i => (i.title || '').toLowerCase().includes(searchTerm.toLowerCase()))
-                  : items.filter(i => i.type === activeFilter)
-                ).length === 0 ? (
-                  <div className="fp-empty-state">
-                    <FiInbox style={{ fontSize: 48, marginBottom: 16, color: '#cbd5e1' }} />
-                    <div>
-                      {searchTerm
-                        ? `No webinars found matching "${searchTerm}"`
-                        : `No ${activeFilter} webinars found`
-                      }
-                    </div>
-<<<<<<< HEAD
-                    {/* {!searchTerm && (
-                      <button className="secondary-btn" style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => navigate('/webinar/webinars?create=1')}>
-                        <FiPlus /> Schedule a Webinar
-                      </button>
-                    )} */}
-=======
-                    {!searchTerm && (
-                      <button className="secondary-btn" style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => navigate('/webinars?create=1')}>
-                        <FiPlus /> Schedule a Webinar
-                      </button>
-                    )}
->>>>>>> f57cca59b83f715f957a247c0ae7a4f9eaac2214
+            ) : (
+              filteredItems.map(item => (
+                <div key={item.id} className="col-12 col-sm-6 col-lg-4">
+                  <div className="h-100">
+                    {item.type === 'live' && <LiveCard item={item} />}
+                    {item.type === 'upcoming' && <UpcomingCard item={item} />}
+                    {item.type === 'recorded' && <RecordedCard item={item} />}
                   </div>
-                ) : (
-                  <div className="fp-cards-grid">
-                    {(searchTerm
-                      ? items.filter(i => (i.title || '').toLowerCase().includes(searchTerm.toLowerCase()))
-                      : items.filter(i => i.type === activeFilter)
-                    ).map(item => (
-                      <div key={item.id} className="fp-list-item-wrapper">
-                        {item.type === 'live' && <LiveCard item={item} />}
-                        {item.type === 'upcoming' && <UpcomingCard item={item} />}
-                        {item.type === 'recorded' && <RecordedCard item={item} />}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-
-        </main>
-      </div >
-    </div >
+                </div>
+              ))
+            )}
+          </div>
+        </>
+      )}
+    </div>
   )
 }
 

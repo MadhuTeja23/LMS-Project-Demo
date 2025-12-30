@@ -13,7 +13,7 @@ const RecordedCard = ({ item }) => {
       {item.cover && <div className="card-cover"><img src={item.cover} alt="cover" /></div>}
       <div style={{ padding: '10px' }}>
         <div className="ci-title">{item.title}</div>
-        <div className="ci-time">{item.dateTime ? new Date(item.dateTime).toLocaleString() : 'No date'}</div>
+        <div className="ci-time">{item.dateTime ? new Date(item.dateTime).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) : 'No date'}</div>
         <div className="ci-notes">{item.notes && item.notes.slice(0, 120)}</div>
         <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>

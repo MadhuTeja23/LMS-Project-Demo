@@ -108,11 +108,7 @@ const Webinars = () => {
             window.dispatchEvent(new Event('webinar-added'));
         } catch (err) { console.error(err) }
 
-<<<<<<< HEAD
         navigate(`/webinar?filter=${autoType}`);
-=======
-        navigate(`/?filter=${autoType}`);
->>>>>>> f57cca59b83f715f957a247c0ae7a4f9eaac2214
     }
 
     const onCoverChange = (e) => {
@@ -153,7 +149,7 @@ const Webinars = () => {
                     <h2>Create a webinar</h2>
                 </div>
                 <div className="right">
-                    <button className="btn publish" onClick={handlePublish}>
+                    <button className="btn btn-success" onClick={handlePublish} style={{ padding: '10px 20px', fontWeight: 600 }}>
                         <FiUploadCloud size={18} style={{ marginRight: 8 }} />
                         Publish
                     </button>
@@ -226,7 +222,7 @@ const Webinars = () => {
                     </div>
 
                     <div className="form-actions-bottom">
-                        <button type="submit" className="btn publish">
+                        <button type="submit" className="btn btn-success" style={{ padding: '10px 20px', fontWeight: 600 }}>
                             <FiUploadCloud size={18} style={{ marginRight: 8 }} />
                             Publish
                         </button>

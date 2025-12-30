@@ -1,0 +1,405 @@
+/* Websites.css - Modern Professional Theme */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --bg-body: #f8fafc;
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    --gradient-text: linear-gradient(135deg, #1e293b 0%, #4f46e5 100%);
+    --gradient-surface: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    --gradient-card: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    --gradient-border: linear-gradient(145deg, #e2e8f0 0%, #cbd5e1 100%);
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg-body);
+}
+
+.website-builder-container {
+    min-height: 100vh;
+    padding: 32px;
+    width: 100%;
+    /* Ensure full width */
+    max-width: 1600px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    /* Explicitly set box-sizing */
+}
+
+/* --- Header & Tabs --- */
+
+.wb-header {
+    margin-bottom: 32px;
+}
+
+.wb-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+    /* Text Gradient */
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+.wb-subtitle {
+    color: var(--text-muted);
+    font-size: 16px;
+}
+
+.wb-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 40px;
+    width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+}
+
+.wb-tab-btn {
+    padding: 10px 24px;
+    border: none;
+    background: transparent;
+    border-radius: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.wb-tab-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.wb-tab-btn.active {
+    background: white;
+    color: var(--primary);
+    box-shadow: var(--shadow-sm);
+    /* Subtle gradient text on active tab */
+    background: linear-gradient(135deg, #fff 0%, #f1f5f9 100%);
+    border: 1px solid white;
+}
+
+/* --- Appearance Tab (Tall Cards) --- */
+
+.theme-showcase-grid {
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+    padding-bottom: 24px;
+    padding-left: 2px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+
+.theme-card-tall {
+    min-width: 260px;
+    width: 260px;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    cursor: pointer;
+    scroll-snap-align: center;
+}
+
+.theme-card-tall:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--primary);
+}
+
+.theme-card-tall.active {
+    border: 2px solid var(--primary);
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+.theme-preview-tall {
+    height: 380px;
+    background: #f8fafc;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Mock Website UI inside Card */
+.mock-browser-ui {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.mock-nav {
+    height: 12px;
+    width: 100%;
+    margin-bottom: 8px;
+    opacity: 0.8;
+}
+
+.mock-hero {
+    height: 140px;
+    width: 100%;
+    margin-bottom: 12px;
+    border-radius: 4px;
+}
+
+.mock-content-row {
+    display: flex;
+    gap: 8px;
+    padding: 0 12px;
+    margin-bottom: 8px;
+}
+
+.mock-block {
+    flex: 1;
+    height: 60px;
+    background: #e2e8f0;
+    border-radius: 4px;
+}
+
+.theme-footer {
+    padding: 16px;
+    background: white;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.theme-name {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-main);
+}
+
+.active-indicator {
+    width: 10px;
+    height: 10px;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #d1fae5;
+}
+
+/* --- Header Preview --- */
+.header-preview-box {
+    border: 1px dashed var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+/* --- Buttons & Inputs --- */
+.btn-primary-action {
+    background: var(--gradient-primary);
+    /* Gradient Button */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+.btn-primary-action:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 10px -2px rgba(79, 70, 229, 0.3);
+}
+
+.btn-secondary-action {
+    background-color: white;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.btn-secondary-action:hover {
+    border-color: #cbd5e1;
+    background-color: #f8fafc;
+}
+
+.wb-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.wb-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.wb-label {
+    display: block;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Form Color override */
+.form-control-color {
+    width: 48px;
+    height: 38px;
+    padding: 4px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+/* --- Common Layouts --- */
+.wb-card {
+    background: var(--gradient-card);
+    /* Card Gradient */
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94a3b8;
+    padding: 8px;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+
+.btn-icon:hover {
+    color: var(--primary);
+    background: #f1f5f9;
+}
+
+/* Modal */
+.wb-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    padding: 16px;
+}
+
+.wb-modal-content {
+    background: white;
+    padding: 32px;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* --- Utilities --- */
+.d-flex {
+    display: flex;
+}
+
+.justify-content-between {
+    justify-content: space-between;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.gap-2 {
+    gap: 8px;
+}
+
+.gap-3 {
+    gap: 12px;
+}
+
+.mb-4 {
+    margin-bottom: 16px;
+}
+
+.text-sm {
+    font-size: 14px;
+}
+
+.text-xs {
+    font-size: 12px;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .website-builder-container {
+        padding: 16px;
+    }
+
+    .wb-tabs {
+        padding-bottom: 8px;
+        margin-bottom: 24px;
+    }
+
+    .header-preview-box {
+        padding: 0 16px;
+    }
+
+    .d-none-mobile {
+        display: none !important;
+    }
+}
