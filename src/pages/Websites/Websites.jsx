@@ -4,7 +4,8 @@ import {
   Layout, Globe, Search, Settings,
   Plus, Edit2, Eye, Trash2, GripVertical,
   Check, ChevronRight, Upload, Link, X, Monitor,
-  Facebook, Twitter, Instagram, Youtube, Linkedin, Send, Image as ImageIcon
+  Facebook, Twitter, Instagram, Youtube, Linkedin, Send, Image as ImageIcon,
+  Home, ShoppingBag, BookOpen, Map, Bot
 } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -35,18 +36,24 @@ const usePersistentState = (key, initialValue) => {
 
 // --- Components ---
 
-const CreatePageModal = ({ isOpen, onClose, onCreate }) => {
+const PageModal = ({ isOpen, onClose, onSave, pageToEdit }) => {
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [type, setType] = useState('Landing Page');
 
   useEffect(() => {
     if (isOpen) {
-      setTitle('');
-      setSlug('');
-      setType('Landing Page');
+      if (pageToEdit) {
+        setTitle(pageToEdit.title);
+        setSlug(pageToEdit.url ? pageToEdit.url.replace(/^\//, '') : '');
+        setType(pageToEdit.type);
+      } else {
+        setTitle('');
+        setSlug('');
+        setType('Landing Page');
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, pageToEdit]);
 
   if (!isOpen) return null;
 
@@ -55,7 +62,26 @@ const CreatePageModal = ({ isOpen, onClose, onCreate }) => {
       toast.error("Please enter a page title");
       return;
     }
-    onCreate({ title, slug: slug || title.toLowerCase().replace(/\s+/g, '-'), type, status: 'Draft' });
+
+    // Auto-generate slug if empty
+    let finalSlug = slug.trim();
+    if (!finalSlug) {
+      finalSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+    // Ensure it starts with /
+    const finalUrl = finalSlug.startsWith('/') ? finalSlug : `/${finalSlug}`;
+
+    const pageData = {
+      title,
+      url: finalUrl,
+      type
+    };
+
+    if (pageToEdit) {
+      onSave({ ...pageToEdit, ...pageData });
+    } else {
+      onSave(pageData); // ID and Status will be handled by parent
+    }
     onClose();
   };
 
@@ -63,7 +89,7 @@ const CreatePageModal = ({ isOpen, onClose, onCreate }) => {
     <div className="wb-modal-overlay">
       <div className="wb-modal-content">
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h3 className="text-xl font-bold m-0 text-slate-800">Create New Page</h3>
+          <h3 className="text-xl font-bold m-0 text-slate-800">{pageToEdit ? 'Edit Page' : 'Create New Page'}</h3>
           <button onClick={onClose} className="btn-icon"><X size={20} /></button>
         </div>
 
@@ -81,9 +107,10 @@ const CreatePageModal = ({ isOpen, onClose, onCreate }) => {
         <div className="mb-4">
           <label className="wb-label">URL Slug</label>
           <div className="input-group">
+            <span className="input-group-text bg-slate-50 border-slate-200 text-slate-500 font-monospace text-xs">/</span>
             <input
               type="text"
-              className="wb-input"
+              className="wb-input rounded-start-0"
               placeholder="summer-sale-landing-page"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
@@ -109,7 +136,61 @@ const CreatePageModal = ({ isOpen, onClose, onCreate }) => {
 
         <div className="d-flex gap-3 justify-content-end mt-4">
           <button onClick={onClose} className="btn-secondary-action">Cancel</button>
-          <button onClick={handleSubmit} className="btn-primary-action">Create Page</button>
+          <button onClick={handleSubmit} className="btn-primary-action">{pageToEdit ? 'Save Changes' : 'Create Page'}</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PagePreviewModal = ({ isOpen, onClose, page }) => {
+  if (!isOpen || !page) return null;
+
+  return (
+    <div className="wb-modal-overlay" onClick={onClose}>
+      <div
+        className="wb-modal-content p-0 overflow-hidden d-flex flex-column"
+        style={{ width: '90vw', height: '90vh', maxWidth: '1200px' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="d-flex align-items-center justify-content-between p-3 border-bottom bg-slate-50">
+          <div className="d-flex align-items-center gap-3">
+            <span className="badge bg-indigo-100 text-indigo-700 font-monospace px-2 py-1 rounded">{page.status}</span>
+            <span className="font-bold text-slate-700">{page.title}</span>
+            <span className="text-slate-400 text-sm font-monospace">{page.url}</span>
+          </div>
+          <div className="d-flex gap-2">
+            <button className="btn-icon" title="Mobile View"><Monitor size={18} /></button>
+            <button onClick={onClose} className="btn-icon"><X size={20} /></button>
+          </div>
+        </div>
+        <div className="flex-grow-1 bg-slate-100 d-flex align-items-center justify-content-center p-4">
+          <div className="bg-white shadow-lg rounded-lg overflow-hidden w-100 h-100 d-flex flex-column">
+            {/* Mock Browser Header */}
+            <div className="bg-slate-50 border-bottom p-2 d-flex align-items-center gap-2">
+              <div className="d-flex gap-1">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
+              </div>
+              <div className="bg-white border rounded px-3 py-1 text-xs text-slate-400 flex-grow-1 text-center font-monospace">
+                lms-academy.com{page.url}
+              </div>
+            </div>
+            {/* Mock Content */}
+            <div className="flex-grow-1 overflow-auto p-5 text-center d-flex flex-column align-items-center justify-content-center">
+              <h1 className="display-4 font-bold text-slate-800 mb-4">{page.title}</h1>
+              <p className="lead text-slate-500 max-w-2xl mb-5">
+                This is a live preview of your "{page.type}". All changes made in the editor will appear here immediately.
+              </p>
+              <div className="p-4 bg-slate-50 border rounded-lg max-w-md w-100">
+                <div className="h-4 bg-slate-200 rounded w-75 mb-3 mx-auto"></div>
+                <div className="h-4 bg-slate-200 rounded w-50 mb-3 mx-auto"></div>
+                <div className="h-4 bg-slate-200 rounded w-2/3 mx-auto"></div>
+              </div>
+              <button className="btn-primary-action mt-5">Call to Action Button</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -120,62 +201,302 @@ const CreatePageModal = ({ isOpen, onClose, onCreate }) => {
 
 const AppearanceTab = () => {
   const [activeTheme, setActiveTheme] = usePersistentState('lms_wb_theme', 'theme-1');
+  const [previewTheme, setPreviewTheme] = useState(null);
 
   const themes = [
-    { id: 'theme-1', name: 'Pulse', color: '#10b981' }, // Green
-    { id: 'theme-2', name: 'Nebula', color: '#8b5cf6' }, // Purple
-    { id: 'theme-3', name: 'Vellum', color: '#64748b' }, // Grey
-    { id: 'theme-4', name: 'Blaze', color: '#f59e0b' },  // Orange
-    { id: 'theme-5', name: 'Ocean', color: '#06b6d4' },  // Cyan
+    { id: 'theme-1', name: 'Modern SaaS', image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop', color: '#10b981' },
+    { id: 'theme-2', name: 'Dark Nebula', image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&h=400&fit=crop', color: '#8b5cf6' },
+    { id: 'theme-3', name: 'Minimalist', image: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=600&h=400&fit=crop', color: '#64748b' },
+    { id: 'theme-4', name: 'Creative Studio', image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=600&h=400&fit=crop', color: '#f59e0b' },
+    { id: 'theme-5', name: 'Oceanic', image: 'https://images.unsplash.com/photo-1518655048521-f130df041f66?w=600&h=400&fit=crop', color: '#06b6d4' },
+    { id: 'theme-6', name: 'LMS Pro', image: 'https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=600&h=400&fit=crop', color: '#4f46e5' },
   ];
 
+  const handleApply = (id, name) => {
+    setActiveTheme(id);
+    toast.success(`Theme "${name}" applied successfully!`);
+    setPreviewTheme(null);
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: 'spring', stiffness: 100 }
+    }
+  };
+
   return (
-    <div>
-      <div className="d-flex justify-content-between align-items-center mb-4">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={itemVariants} className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h4 className="font-bold text-lg text-slate-800">Theme Library</h4>
           <p className="text-slate-500 text-sm">Select a premium design for your academy.</p>
         </div>
-        <button className="btn-secondary-action" onClick={() => toast.info("Visual Editor feature coming soon!")}>Open Visual Editor</button>
-      </div>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="btn-secondary-action"
+          onClick={() => toast.info("Visual Editor feature coming soon!")}
+        >
+          Open Visual Editor
+        </motion.button>
+      </motion.div>
 
-      <div className="theme-showcase-grid">
+      <motion.div variants={containerVariants} className="theme-showcase-grid">
         {themes.map(t => (
-          <div
+          <motion.div
+            variants={itemVariants}
             key={t.id}
-            className={`theme-card-tall ${activeTheme === t.id ? 'active' : ''}`}
-            onClick={() => { setActiveTheme(t.id); toast.success(`Theme "${t.name}" applied!`); }}
+            className={`theme-card-visual ${activeTheme === t.id ? 'active' : ''}`}
+            whileHover={{ y: -5 }}
           >
-            <div className="theme-preview-tall">
-              {/* Mock Browser UI */}
-              <div className="mock-browser-ui">
-                <div className="mock-nav" style={{ background: t.color }}></div>
-                <div className="mock-hero" style={{ background: `linear-gradient(180deg, ${t.color}22 0%, white 100%)` }}></div>
-                <div className="mock-content-row">
-                  <div className="mock-block" style={{ opacity: 0.5 }}></div>
-                  <div className="mock-block" style={{ opacity: 0.5 }}></div>
-                </div>
-                <div className="mock-lines">
-                  <div className="mock-line"></div>
-                  <div className="mock-line short"></div>
-                  <div className="mock-line" style={{ width: '80%' }}></div>
-                </div>
+            <div className="theme-image-container">
+              <img src={t.image} alt={t.name} className="theme-image" />
+              <div className="theme-overlay">
+                {activeTheme !== t.id && (
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileHover={{ scale: 1.1 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="btn-primary-action py-2 px-3 text-sm shadow-md"
+                    onClick={(e) => { e.stopPropagation(); handleApply(t.id, t.name); }}
+                  >
+                    Apply
+                  </motion.button>
+                )}
               </div>
             </div>
-            <div className="theme-footer">
-              <span className="theme-name">{t.name}</span>
+            <div className="theme-info">
+              <div className="d-flex align-items-center gap-2">
+                <span className="theme-name font-semibold text-slate-800">{t.name}</span>
+                <button
+                  className="btn-icon p-1 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-circle transition-colors"
+                  onClick={(e) => { e.stopPropagation(); setPreviewTheme(t); }}
+                  title="Preview"
+                >
+                  <Eye size={16} />
+                </button>
+              </div>
               {activeTheme === t.id ? (
-                <span className="text-xs font-bold text-green-600 d-flex align-items-center gap-1">
+                <span className="text-xs font-bold text-emerald-600 d-flex align-items-center gap-1 bg-emerald-50 px-2 py-1 rounded-full">
                   <div className="active-indicator"></div> Active
                 </span>
               ) : (
-                <span className="text-xs text-slate-400">Click to apply</span>
+                <span className="text-xs text-slate-400">Ready to Apply</span>
               )}
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
-    </div>
+      </motion.div>
+
+      {/* Theme Preview Modal */}
+      <AnimatePresence>
+        {previewTheme && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="wb-modal-overlay"
+            onClick={() => setPreviewTheme(null)}
+            style={{ padding: 0, zIndex: 10000 }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="wb-modal-content p-0 overflow-hidden d-flex flex-column"
+              style={{
+                width: '90vw',
+                height: '85vh',
+                maxWidth: '1200px',
+                borderRadius: '16px',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                backgroundColor: '#ffffff',
+                border: '1px solid rgba(0,0,0,0.1)'
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Browser Header */}
+              <div
+                className="d-flex align-items-center justify-content-between"
+                style={{
+                  backgroundColor: '#f1f5f9',
+                  borderBottom: '1px solid #e2e8f0',
+                  padding: '12px 20px',
+                  minHeight: '56px'
+                }}
+              >
+                <div className="d-flex align-items-center" style={{ gap: '16px' }}>
+                  {/* Traffic Lights */}
+                  <div className="d-flex" style={{ gap: '8px' }}>
+                    <div className="rounded-circle bg-danger opacity-75" style={{ width: '12px', height: '12px' }}></div>
+                    <div className="rounded-circle bg-warning opacity-75" style={{ width: '12px', height: '12px' }}></div>
+                    <div className="rounded-circle bg-success opacity-75" style={{ width: '12px', height: '12px' }}></div>
+                  </div>
+
+                  {/* Address Bar */}
+                  <div
+                    className="d-flex align-items-center shadow-sm"
+                    style={{
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '99px',
+                      padding: '6px 16px',
+                      fontSize: '12px',
+                      color: '#64748b',
+                      gap: '8px',
+                      minWidth: '320px',
+                      fontFamily: 'monospace'
+                    }}
+                  >
+                    <div className="rounded-circle bg-success" style={{ width: '8px', height: '8px' }}></div>
+                    <span>{`https://lms-academy.com/themes/${previewTheme.id}`}</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setPreviewTheme(null)}
+                  className="btn-icon"
+                  style={{ width: '32px', height: '32px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0' }}
+                  title="Close Preview"
+                >
+                  <X size={18} color="#64748b" />
+                </button>
+              </div>
+
+              {/* Viewport Area */}
+              <div className="flex-grow-1 position-relative overflow-hidden" style={{ backgroundColor: '#f8fafc' }}>
+                {/* Main Content (Scrollable) */}
+                <div className="w-100 h-100 overflow-auto custom-scrollbar" style={{ scrollBehavior: 'smooth' }}>
+                  <div className="w-100 shadow-sm position-relative" style={{ backgroundColor: '#ffffff', minHeight: '100%' }}>
+                    {/* Image Container - Centered and Contained */}
+                    <div style={{ width: '100%', backgroundColor: '#f1f5f9', minHeight: '300px', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: '40px' }}>
+                      <img
+                        src={previewTheme.image.replace('w=600&h=400', 'w=1600&q=95')}
+                        alt={previewTheme.name}
+                        className="d-block"
+                        style={{
+                          height: 'auto',
+                          width: '100%',
+                          maxWidth: '800px',
+                          objectFit: 'contain',
+                          borderRadius: '12px',
+                          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)'
+                        }}
+                      />
+                    </div>
+
+                    {/* Demo Content Section */}
+                    <div className="text-center" style={{ padding: '60px 20px 120px 20px', backgroundColor: '#ffffff', borderTop: '1px solid #f1f5f9' }}>
+                      <h2 style={{ fontSize: '28px', fontWeight: '800', color: '#1e293b', marginBottom: '16px' }}>Content Demo Section</h2>
+                      <p style={{ color: '#64748b', maxWidth: '600px', margin: '0 auto 32px auto', lineHeight: '1.6' }}>
+                        This is a demonstration of how the <strong>{previewTheme.name}</strong> looks with real content.
+                        The theme includes optimized typography, color palettes, and responsive layouts automatically applied to your courses.
+                      </p>
+                      {/* Example Content Grid */}
+                      <div className="d-flex justify-content-center flex-wrap" style={{ gap: '32px', marginTop: '40px' }}>
+                        {[
+                          { title: 'Full Stack Development', img: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=300&fit=crop', price: '$99' },
+                          { title: 'Digital Product Design', img: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=300&fit=crop', price: '$89' },
+                          { title: 'Business Strategy', img: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&h=300&fit=crop', price: '$129' }
+                        ].map((item, i) => (
+                          <div key={i} style={{ width: '220px', textAlign: 'left', backgroundColor: '#ffffff', borderRadius: '16px', boxShadow: '0 10px 30px -5px rgba(0,0,0,0.08)', padding: '12px', transition: 'transform 0.2s', cursor: 'default' }} className="hover-lift">
+                            <div style={{ height: '140px', borderRadius: '10px', overflow: 'hidden', marginBottom: '12px' }}>
+                              <img src={item.img} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                            <div style={{ padding: '0 4px' }}>
+                              <div style={{ fontSize: '14px', fontWeight: '700', color: '#1e293b', marginBottom: '4px', lineHeight: '1.4' }}>{item.title}</div>
+                              <div className="d-flex justify-content-between align-items-center">
+                                <span style={{ fontSize: '12px', color: '#64748b' }}>Dr. Smith</span>
+                                <span style={{ fontSize: '13px', fontWeight: '600', color: '#6366f1' }}>{item.price}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="mt-5 pt-3 border-top" style={{ borderColor: '#f1f5f9', maxWidth: '600px', margin: '40px auto 0' }}>
+                        <p style={{ fontSize: '12px', letterSpacing: '1px', fontWeight: '600', textTransform: 'uppercase', color: '#94a3b8', marginBottom: '20px' }}>Trusted by Industry Leaders</p>
+                        <div className="d-flex justify-content-center gap-4 opacity-50 grayscale">
+                          {/* Mock Logos */}
+                          <div style={{ height: '24px', width: '80px', backgroundColor: '#cbd5e1', borderRadius: '4px' }}></div>
+                          <div style={{ height: '24px', width: '80px', backgroundColor: '#cbd5e1', borderRadius: '4px' }}></div>
+                          <div style={{ height: '24px', width: '80px', backgroundColor: '#cbd5e1', borderRadius: '4px' }}></div>
+                          <div style={{ height: '24px', width: '80px', backgroundColor: '#cbd5e1', borderRadius: '4px' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating Action Bar */}
+                <div
+                  className="position-absolute bottom-0 start-0 end-0 d-flex justify-content-between align-items-center shadow-lg"
+                  style={{
+                    padding: '16px 24px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(12px)',
+                    borderTop: '1px solid rgba(0,0,0,0.05)',
+                    zIndex: 20
+                  }}
+                >
+                  <div className="d-flex align-items-center" style={{ gap: '16px' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+                      <img src={previewTheme.image} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                    </div>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#1e293b' }}>{previewTheme.name}</h3>
+                      <div className="d-flex align-items-center" style={{ gap: '8px', marginTop: '4px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: '600', color: '#059669', backgroundColor: '#ecfdf5', padding: '2px 8px', borderRadius: '99px', border: '1px solid #d1fae5' }}>
+                          Premium
+                        </span>
+                        <span style={{ fontSize: '12px', color: '#94a3b8' }}>v2.4.0</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="d-flex align-items-center" style={{ gap: '16px' }}>
+                    <span className="d-none d-md-block" style={{ fontSize: '14px', color: '#64748b' }}>
+                      Satisfied with this look?
+                    </span>
+                    {activeTheme !== previewTheme.id ? (
+                      <button
+                        className="btn-primary-action"
+                        onClick={() => handleApply(previewTheme.id, previewTheme.name)}
+                        style={{ boxShadow: '0 4px 14px rgba(0,0,0,0.1)' }}
+                      >
+                        Apply Theme
+                      </button>
+                    ) : (
+                      <button
+                        className="btn-secondary-action"
+                        style={{ cursor: 'default', backgroundColor: '#ecfdf5', color: '#059669', borderColor: '#a7f3d0' }}
+                      >
+                        <Check size={16} /> Active Theme
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
@@ -187,38 +508,74 @@ const WebsiteBuilderTab = () => {
     { id: 3, title: 'About Us', url: '/about', type: 'About / Info', status: 'Draft' },
   ]);
 
-  const handleCreate = (newPage) => {
-    setPages([...pages, { id: Date.now(), ...newPage }]);
-    toast.success("Page created successfully!");
+  const [editingPage, setEditingPage] = useState(null);
+  const [previewingPage, setPreviewingPage] = useState(null);
+
+  const handleSavePage = (pageData) => {
+    if (editingPage) {
+      // Update existing
+      setPages(prev => prev.map(p => p.id === pageData.id ? pageData : p));
+      toast.success("Page updated successfully!");
+    } else {
+      // Create new
+      setPages([...pages, { id: Date.now(), ...pageData, status: 'Draft' }]);
+      toast.success("Page created successfully!");
+    }
+  };
+
+  const handleEdit = (page) => {
+    setEditingPage(page);
+    setModalOpen(true);
   };
 
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this page?')) {
-      setPages(pages.filter(p => p.id !== id));
+      setPages(prev => prev.filter(p => p.id !== id));
       toast.info("Page deleted.");
     }
   };
 
   const toggleStatus = (id) => {
-    setPages(pages.map(p =>
+    setPages(prev => prev.map(p =>
       p.id === id ? { ...p, status: p.status === 'Published' ? 'Draft' : 'Published' } : p
     ));
     toast.success("Page status updated");
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: 'spring', stiffness: 100 }
+    }
+  };
+
   return (
-    <div>
-      <div className="d-flex justify-content-between align-items-center mb-4">
+    <motion.div variants={containerVariants} initial="hidden" animate="visible">
+      <motion.div variants={itemVariants} className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h4 className="font-bold text-lg text-slate-800">Website Builder & Pages</h4>
           <p className="text-slate-500 text-sm">Manage your site content, landing pages, and structure.</p>
         </div>
-        <button className="btn-primary-action" onClick={() => setModalOpen(true)}>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="btn-primary-action" onClick={() => { setEditingPage(null); setModalOpen(true); }}
+        >
           <Plus size={18} /> Create New Page
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
-      <div className="wb-card p-0 overflow-hidden">
+      <motion.div variants={itemVariants} className="wb-card p-0 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
         <div className="table-responsive">
           <table className="table table-hover align-middle mb-0">
             <thead className="bg-slate-50">
@@ -231,43 +588,51 @@ const WebsiteBuilderTab = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {pages.map(page => (
-                <tr key={page.id}>
-                  <td className="ps-4 py-3">
-                    <div className="d-flex align-items-center gap-3">
-                      <div className="bg-indigo-50 text-indigo-600 p-2 rounded-lg d-flex align-items-center justify-content-center" style={{ width: 40, height: 40 }}>
-                        <Layout size={18} />
+              <AnimatePresence>
+                {pages.map(page => (
+                  <motion.tr
+                    key={page.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    layout
+                  >
+                    <td className="ps-4 py-3">
+                      <div className="d-flex align-items-center gap-3">
+                        <div className="bg-indigo-50 text-indigo-600 p-2 rounded-lg d-flex align-items-center justify-content-center" style={{ width: 40, height: 40 }}>
+                          <Layout size={18} />
+                        </div>
+                        <span className="font-semibold text-slate-800 text-sm">{page.title}</span>
                       </div>
-                      <span className="font-semibold text-slate-800 text-sm">{page.title}</span>
-                    </div>
-                  </td>
-                  <td className="py-3">
-                    <code className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded border border-slate-200">{page.url}</code>
-                  </td>
-                  <td className="py-3">
-                    <span className="text-sm text-slate-600">{page.type}</span>
-                  </td>
-                  <td className="py-3">
-                    <button
-                      className={`px-2 py-1 rounded-full text-xs font-semibold border-0 ${page.status === 'Published'
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-amber-100 text-amber-700'
-                        }`}
-                      onClick={() => toggleStatus(page.id)}
-                      title="Click to toggle status"
-                    >
-                      {page.status}
-                    </button>
-                  </td>
-                  <td className="pe-4 py-3 text-end">
-                    <div className="d-flex align-items-center justify-content-end gap-2">
-                      <button className="btn-icon text-slate-400 hover:text-indigo-600 hover:bg-indigo-50" onClick={() => toast.info(`Previewing ${page.title}`)} title="Preview"><Eye size={18} /></button>
-                      <button className="btn-icon text-slate-400 hover:text-indigo-600 hover:bg-indigo-50" onClick={() => toast.info(`Editing ${page.title}`)} title="Edit"><Edit2 size={18} /></button>
-                      <button className="btn-icon text-slate-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(page.id)} title="Delete"><Trash2 size={18} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="py-3">
+                      <code className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded border border-slate-200">{page.url}</code>
+                    </td>
+                    <td className="py-3">
+                      <span className="text-sm text-slate-600">{page.type}</span>
+                    </td>
+                    <td className="py-3">
+                      <button
+                        className={`px-2 py-1 rounded-full text-xs font-semibold border-0 ${page.status === 'Published'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-amber-100 text-amber-700'
+                          }`}
+                        onClick={() => toggleStatus(page.id)}
+                        title="Click to toggle status"
+                      >
+                        {page.status}
+                      </button>
+                    </td>
+                    <td className="pe-4 py-3 text-end">
+                      <div className="d-flex align-items-center justify-content-end gap-2">
+                        <button className="btn-icon text-slate-400 hover:text-indigo-600 hover:bg-indigo-50" onClick={() => setPreviewingPage(page)} title="Preview"><Eye size={18} /></button>
+                        <button className="btn-icon text-slate-400 hover:text-indigo-600 hover:bg-indigo-50" onClick={() => handleEdit(page)} title="Edit"><Edit2 size={18} /></button>
+                        <button className="btn-icon text-slate-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(page.id)} title="Delete"><Trash2 size={18} /></button>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))}
+              </AnimatePresence>
             </tbody>
           </table>
         </div>
@@ -276,14 +641,23 @@ const WebsiteBuilderTab = () => {
             No pages found. Create one to get started!
           </div>
         )}
-      </div>
+      </motion.div>
 
-      <CreatePageModal
+
+
+      <PageModal
         isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        onCreate={handleCreate}
+        onClose={() => { setModalOpen(false); setEditingPage(null); }}
+        onSave={handleSavePage}
+        pageToEdit={editingPage}
       />
-    </div>
+
+      <PagePreviewModal
+        isOpen={!!previewingPage}
+        onClose={() => setPreviewingPage(null)}
+        page={previewingPage}
+      />
+    </motion.div >
   );
 };
 
@@ -339,16 +713,36 @@ const NavigationTab = () => {
   };
 
   const removeHeaderLink = (id) => {
-    setHeaderLinks(headerLinks.filter(l => l.id !== id));
+    if (window.confirm("Are you sure you want to remove this link?")) {
+      setHeaderLinks(prev => prev.filter(l => l.id !== id));
+      toast.info("Link removed");
+    }
   };
 
   // --- Render ---
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: 'spring', stiffness: 100 }
+    }
+  };
+
   return (
-    <div className="animate-fade-in">
+    <motion.div variants={containerVariants} initial="hidden" animate="visible">
       {/* HEADER SECTION */}
-      <div className="mb-5">
+      <motion.div variants={itemVariants} className="mb-5">
         <h4 className="font-bold text-xl mb-4 text-slate-800">Header Preview</h4>
-        <div className="header-preview-box" style={{
+        <div className="header-preview-box shadow-sm" style={{
           height: `${headerConfig.height}px`,
           backgroundColor: headerConfig.bgColor,
           color: headerConfig.textColor
@@ -362,7 +756,7 @@ const NavigationTab = () => {
           </div>
 
           {/* Nav Links */}
-          <div className="d-none d-md-flex gap-4 text-sm font-medium d-none-mobile">
+          <div className="d-none d-md-flex flex-grow-1 justify-content-center gap-4 text-sm font-medium d-none-mobile">
             {headerLinks.filter(l => l.visible).map(l => (
               <span key={l.id} style={{ cursor: 'pointer', opacity: 0.9 }}>{l.text}</span>
             ))}
@@ -375,10 +769,10 @@ const NavigationTab = () => {
             <button className="btn-primary-action py-2 px-4 text-sm" onClick={() => toast.info("Login clicked (Preview mode)")} style={{ boxShadow: 'none' }}>Login</button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* HEADER CONTROLS */}
-      <div className="wb-card mb-5">
+      <motion.div variants={itemVariants} className="wb-card mb-5 shadow-sm hover:shadow-md transition-shadow">
         <h5 className="font-bold text-lg mb-4">Header Configuration</h5>
 
         <div className="row g-4 mb-5">
@@ -479,12 +873,12 @@ const NavigationTab = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </motion.div>
 
       {/* FOOTER SECTION */}
-      <div className="mb-5">
+      <motion.div variants={itemVariants} className="mb-5">
         <h4 className="font-bold text-xl mb-4 text-slate-800">Footer Preview</h4>
-        <div className="p-5 rounded-xl text-center transition-colors" style={{ backgroundColor: footerConfig.bgColor, color: footerConfig.textColor }}>
+        <div className="p-5 rounded-xl text-center transition-colors shadow-sm" style={{ backgroundColor: footerConfig.bgColor, color: footerConfig.textColor }}>
           <h4 className="mb-3 font-bold">{footerConfig.title}</h4>
           <div className="d-flex justify-content-center gap-3 mb-4" style={{ opacity: 0.9 }}>
             {/* Social Icons Preview */}
@@ -501,10 +895,10 @@ const NavigationTab = () => {
             <small style={{ opacity: 0.6 }}>{footerConfig.copyright}</small>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* FOOTER CONTROLS */}
-      <div className="wb-card">
+      <motion.div variants={itemVariants} className="wb-card shadow-sm hover:shadow-md transition-shadow">
         <h5 className="font-bold text-lg mb-4">Footer Configuration</h5>
 
         {/* Visual Settings */}
@@ -547,73 +941,303 @@ const NavigationTab = () => {
           ].map(social => (
             <div key={social.key} className="col-md-6">
               <label className="wb-label text-muted mb-2 text-xs font-bold uppercase tracking-wider">{social.name}</label>
-              <div className="d-flex align-items-center border border-slate-200 rounded-lg bg-white overflow-hidden" style={{ transition: 'all 0.2s' }}>
+              <div className="d-flex align-items-center border border-slate-200 rounded-lg bg-white overflow-hidden focus-within:ring-2 ring-indigo-100 transition-all">
                 <div className={`px-3 py-2 border-end border-slate-100 ${social.color} bg-slate-50 d-flex align-items-center justify-content-center`} style={{ width: '48px', height: '42px' }}>
                   {social.icon}
                 </div>
                 <input
-                  className="flex-grow-1 border-0 px-3 py-2 text-sm text-slate-700 placeholder-slate-400"
+                  className="flex-grow-1 border-0 px-3 py-2 text-sm text-slate-700 placeholder-slate-400 focus:outline-none"
                   placeholder={`username`}
                   value={footerLinks[social.key] || ''}
-                  onChange={(e) => setFooterLinks({ ...footerLinks, [social.key]: e.target.value })}
-                  style={{ outline: 'none', boxShadow: 'none', width: '100%' }}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setFooterLinks(prev => ({ ...prev, [social.key]: val }));
+                  }}
+                  style={{ width: '100%' }}
                 />
               </div>
             </div>
           ))}
         </div>
         <div className="d-flex justify-content-end mt-5 pt-3 border-top">
-          <button className="btn-primary-action px-4 py-2" onClick={() => toast.success("Configuration saved successfully!")}><Check size={18} className="me-2" /> Save Changes</button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="btn-primary-action px-4 py-2" onClick={() => toast.success("Configuration saved successfully!")}
+          >
+            <Check size={18} className="me-2" /> Save Changes
+          </motion.button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
 const SEOTab = () => {
-  const [seoConfig, setSeoConfig] = usePersistentState('lms_wb_seo', {
-    title: 'My Learning Academy',
-    description: 'Join thousands of students learning effectively.'
-  });
+  const [seoPages, setSeoPages] = usePersistentState('lms_wb_seo_pages', [
+    { id: 'home', name: 'Home Page', title: 'Home Page Title', description: 'Home Page Description', keywords: 'Home Page Keywords' },
+    { id: 'store', name: 'Store', title: 'Store Title', description: 'Store Description', keywords: 'Store Keywords' },
+    { id: 'blog', name: 'Blog', title: 'Blog Title', description: 'Blog Description', keywords: 'Blog Keywords' },
+  ]);
+
+  const [sitemapFile, setSitemapFile] = useState(null);
+  const [robotsTxt, setRobotsTxt] = usePersistentState('lms_wb_robots', 'User-agent: *\nAllow: /');
+
+  const updatePageSeo = (id, field, value) => {
+    setSeoPages(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p));
+  };
+
+  const handleSave = (pageName) => {
+    toast.success(`${pageName} SEO settings saved!`);
+  };
+
+  const getPageIcon = (id) => {
+    switch (id) {
+      case 'home': return <Home size={18} style={{ color: '#2563eb' }} />; // Blue-600
+      case 'store': return <ShoppingBag size={18} style={{ color: '#9333ea' }} />; // Purple-600
+      case 'blog': return <BookOpen size={18} style={{ color: '#db2777' }} />; // Pink-600
+      default: return <Globe size={18} style={{ color: '#475569' }} />; // Slate-600
+    }
+  };
+
+  const getPageColor = (id) => {
+    switch (id) {
+      case 'home': return {
+        headerBg: 'linear-gradient(to right, #eff6ff, transparent)', // blue-50
+        borderColor: '#dbeafe', // blue-100
+        textColor: '#1d4ed8', // blue-700
+        btnBg: '#2563eb', // blue-600
+        btnHover: '#1d4ed8' // blue-700
+      };
+      case 'store': return {
+        headerBg: 'linear-gradient(to right, #faf5ff, transparent)', // purple-50
+        borderColor: '#f3e8ff', // purple-100
+        textColor: '#7e22ce', // purple-700
+        btnBg: '#9333ea', // purple-600
+        btnHover: '#7e22ce' // purple-700
+      };
+      case 'blog': return {
+        headerBg: 'linear-gradient(to right, #fdf2f8, transparent)', // pink-50
+        borderColor: '#fce7f3', // pink-100
+        textColor: '#be185d', // pink-700
+        btnBg: '#db2777', // pink-600
+        btnHover: '#be185d' // pink-700
+      };
+      default: return {
+        headerBg: 'linear-gradient(to right, #f8fafc, transparent)', // slate-50
+        borderColor: '#f1f5f9', // slate-100
+        textColor: '#334155', // slate-700
+        btnBg: '#1e293b', // slate-800
+        btnHover: '#0f172a' // slate-900
+      };
+    }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: 'spring', stiffness: 100 }
+    }
+  };
 
   return (
-    <div className="row justify-content-center">
-      <div className="col-lg-8">
-        <div className="wb-card">
-          <div className="d-flex align-items-start justify-content-between mb-4">
-            <div>
-              <h4 className="font-bold text-lg m-0">Global SEO</h4>
-              <p className="text-slate-500 text-sm">Configure default meta tags for better visibility.</p>
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="max-w-7xl mx-auto px-2">
+      <motion.div variants={itemVariants} className="text-center mb-8">
+        <h2 className="text-3xl font-extrabold text-slate-800 m-0 tracking-tight">SEO Configuration</h2>
+        <p className="text-slate-500 mt-2 max-w-2xl mx-auto text-lg">
+          Optimize your academy's visibility across search engines with granular control over meta tags and indexing.
+        </p>
+      </motion.div>
+
+      <div className="row g-4">
+        {seoPages.map((page, index) => {
+          const icon = getPageIcon(page.id);
+          const colors = getPageColor(page.id);
+
+          const pageCard = (
+            <div className="col-lg-6" key={page.id}>
+              <motion.div
+                variants={itemVariants}
+                className="h-100"
+                whileHover={{ y: -5, transition: { type: 'spring', stiffness: 300 } }}
+              >
+                <div
+                  className="wb-card bg-white p-0 h-100 border shadow-sm overflow-hidden d-flex flex-column transition-all duration-300 hover:shadow-lg"
+                  style={{ borderColor: colors.borderColor }}
+                >
+
+                  {/* Compact Header with Gradient */}
+                  <div
+                    className="p-3 border-bottom"
+                    style={{ background: colors.headerBg, borderColor: colors.borderColor }}
+                  >
+                    <div className="d-flex align-items-center justify-content-between">
+                      <div className="d-flex align-items-center gap-3">
+                        <motion.div
+                          whileHover={{ rotate: 10, scale: 1.1 }}
+                          className="p-2 bg-white rounded-lg shadow-sm"
+                          style={{ color: colors.textColor }}
+                        >
+                          {icon}
+                        </motion.div>
+                        <div>
+                          <h3 className="text-base font-bold m-0" style={{ color: colors.textColor }}>{page.name}</h3>
+                          <span className="small text-uppercase fw-bold text-muted" style={{ fontSize: '10px', letterSpacing: '0.05em' }}>SEO Config</span>
+                        </div>
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="py-1 px-3 text-xs font-medium text-white rounded shadow-sm border-0 d-flex align-items-center gap-1"
+                        style={{ backgroundColor: colors.btnBg }}
+                        onClick={() => handleSave(page.name)}
+                      >
+                        <Check size={14} /> Save
+                      </motion.button>
+                    </div>
+                  </div>
+
+                  {/* Compact Body */}
+                  <div className="p-3 flex-grow-1">
+                    <div className="row g-3 mb-3">
+                      <div className="col-md-7">
+                        <label className="wb-label small text-uppercase fw-bold text-muted mb-1" style={{ fontSize: '10px' }}>Meta Title</label>
+                        <input
+                          className="wb-input py-2 text-sm form-control shadow-none"
+                          placeholder={`e.g. ${page.name} | Academy`}
+                          value={page.title}
+                          onChange={(e) => updatePageSeo(page.id, 'title', e.target.value)}
+                          style={{ backgroundColor: '#f8fafc', borderColor: '#e2e8f0' }}
+                        />
+                      </div>
+                      <div className="col-md-5">
+                        <label className="wb-label small text-uppercase fw-bold text-muted mb-1" style={{ fontSize: '10px' }}>Keywords</label>
+                        <input
+                          className="wb-input py-2 text-sm form-control shadow-none"
+                          placeholder="learning, course"
+                          value={page.keywords}
+                          onChange={(e) => updatePageSeo(page.id, 'keywords', e.target.value)}
+                          style={{ backgroundColor: '#f8fafc', borderColor: '#e2e8f0' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="wb-label small text-uppercase fw-bold text-muted mb-1" style={{ fontSize: '10px' }}>Description</label>
+                      <textarea
+                        className="wb-input py-2 text-sm form-control shadow-none"
+                        placeholder="Page summary..."
+                        rows={2}
+                        value={page.description}
+                        onChange={(e) => updatePageSeo(page.id, 'description', e.target.value)}
+                        style={{ minHeight: '60px', backgroundColor: '#f8fafc', borderColor: '#e2e8f0' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             </div>
-            <div className="bg-indigo-50 p-2 rounded text-indigo-600"><Search size={24} /></div>
-          </div>
+          );
 
-          <div className="mb-4">
-            <label className="wb-label">Meta Title</label>
-            <input
-              className="wb-input"
-              value={seoConfig.title}
-              onChange={(e) => setSeoConfig({ ...seoConfig, title: e.target.value })}
-            />
-          </div>
-          <div className="mb-4">
-            <label className="wb-label">Meta Description</label>
-            <textarea
-              className="wb-input"
-              rows={3}
-              value={seoConfig.description}
-              onChange={(e) => setSeoConfig({ ...seoConfig, description: e.target.value })}
-            />
-          </div>
+          // Inject Tools Column at index 2 (swapped position with pageCard as requested previously: Page Left, Tools Right)
+          if (index === 2) {
+            return [
+              pageCard,
+              <div className="col-lg-6" key="seo-tools-combined">
+                <motion.div variants={itemVariants} className="d-flex flex-column gap-3 h-100">
 
-          <div className="d-flex justify-content-end">
-            <button className="btn-primary-action" onClick={() => toast.success("SEO Settings Saved!")}>
-              <Check size={16} /> Save Changes
-            </button>
-          </div>
-        </div>
+                  {/* Sitemap Card Compact */}
+                  <motion.div
+                    className="wb-card bg-white p-0 shadow-sm overflow-hidden flex-grow-1 hover:shadow-lg transition-all"
+                    style={{ border: '1px solid #d1fae5' }}
+                    whileHover={{ y: -3, transition: { type: 'spring', stiffness: 300 } }}
+                  >
+                    <div
+                      className="p-3 border-bottom d-flex align-items-center justify-content-between"
+                      style={{ background: 'linear-gradient(to right, #ecfdf5, transparent)', borderColor: '#d1fae5' }}
+                    >
+                      <div className="d-flex align-items-center gap-2">
+                        <motion.div whileHover={{ rotate: 10 }} className="p-1.5 bg-white rounded-lg shadow-sm">
+                          <Map size={18} style={{ color: '#059669' }} />
+                        </motion.div>
+                        <h3 className="text-base font-bold m-0" style={{ color: '#065f46' }}>Sitemap.xml</h3>
+                      </div>
+                      {sitemapFile && (
+                        <button
+                          className="text-[10px] font-bold bg-white px-2 py-1 rounded border"
+                          style={{ color: '#059669', borderColor: '#a7f3d0' }}
+                          onClick={() => toast.success("Uploaded!")}
+                        >
+                          Uploaded
+                        </button>
+                      )}
+                    </div>
+                    <div className="p-3 d-flex align-items-center justify-content-between">
+                      <span className="text-muted small text-truncate" style={{ maxWidth: '150px' }}>{sitemapFile ? sitemapFile.name : 'No file selected'}</span>
+                      <label
+                        className="btn cursor-pointer py-1 px-3 text-xs fw-bold shadow-sm d-flex align-items-center"
+                        style={{ backgroundColor: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0' }}
+                      >
+                        Browse File
+                        <input type="file" className="d-none" accept=".xml" onChange={(e) => setSitemapFile(e.target.files[0])} />
+                      </label>
+                    </div>
+                  </motion.div>
+
+                  {/* Robots.txt Card Compact */}
+                  <motion.div
+                    className="wb-card bg-white p-0 shadow-sm overflow-hidden flex-grow-1 hover:shadow-lg transition-all"
+                    style={{ border: '1px solid #e0e7ff' }}
+                    whileHover={{ y: -3, transition: { type: 'spring', stiffness: 300 } }}
+                  >
+                    <div
+                      className="p-3 border-bottom d-flex align-items-center justify-content-between"
+                      style={{ background: 'linear-gradient(to right, #eef2ff, transparent)', borderColor: '#e0e7ff' }}
+                    >
+                      <div className="d-flex align-items-center gap-2">
+                        <motion.div whileHover={{ rotate: 10 }} className="p-1.5 bg-white rounded-lg shadow-sm">
+                          <Bot size={18} style={{ color: '#4f46e5' }} />
+                        </motion.div>
+                        <h3 className="text-base font-bold m-0" style={{ color: '#3730a3' }}>Robots.txt</h3>
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="py-1 px-3 text-xs text-white border-0 rounded shadow-sm"
+                        style={{ backgroundColor: '#4f46e5' }}
+                        onClick={() => toast.success("Updated!")}
+                      >
+                        Save
+                      </motion.button>
+                    </div>
+                    <div className="p-0">
+                      <textarea
+                        className="wb-input font-monospace text-xs border-0 rounded-0"
+                        rows={3}
+                        value={robotsTxt}
+                        onChange={(e) => setRobotsTxt(e.target.value)}
+                        style={{ resize: 'none', width: '100%', padding: '12px', backgroundColor: '#0f172a', color: '#e2e8f0' }}
+                      />
+                    </div>
+                  </motion.div>
+                </motion.div>
+              </div>
+            ];
+          }
+          return pageCard;
+        })}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -676,9 +1300,13 @@ const SettingsTab = () => {
           <h2 className="text-2xl font-bold text-slate-800 m-0">Site Settings</h2>
           <p className="text-slate-500 mt-1">Manage your brand identity and global configurations.</p>
         </div>
-        <button className="btn-primary-action" onClick={() => toast.success("All settings saved successfully!")}>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="btn-primary-action" onClick={() => toast.success("All settings saved successfully!")}
+        >
           <Check size={18} className="me-2" /> Save Changes
-        </button>
+        </motion.button>
       </div>
 
       <div className="row g-4">
@@ -807,8 +1435,9 @@ const SettingsTab = () => {
                   type="checkbox"
                   checked={settings.enableFootfall}
                   onChange={(e) => {
-                    setSettings({ ...settings, enableFootfall: e.target.checked });
-                    toast.info(`Social Footfall ${e.target.checked ? 'Enabled' : 'Disabled'}`);
+                    const checked = e.target.checked;
+                    setSettings(prev => ({ ...prev, enableFootfall: checked }));
+                    toast.info(`Social Footfall ${checked ? 'Enabled' : 'Disabled'}`);
                   }}
                 />
               </div>
@@ -844,13 +1473,24 @@ const Websites = () => {
 
         <div className="wb-tabs">
           {tabs.map(tab => (
-            <button
+            <motion.button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`wb-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               {tab.icon} {tab.label}
-            </button>
+              {activeTab === tab.id && (
+                <motion.div
+                  layoutId="activeTabIndicator"
+                  className="position-absolute bottom-0 start-0 w-100 h-100 border-2 border-indigo-500 rounded-lg"
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  style={{ pointerEvents: 'none', borderColor: 'transparent', boxShadow: '0 0 0 2px rgba(79, 70, 229, 0.1)' }}
+                />
+              )}
+            </motion.button>
           ))}
         </div>
 

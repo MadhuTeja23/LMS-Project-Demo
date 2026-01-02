@@ -35,7 +35,7 @@ const Webinars = () => {
             const params = new URLSearchParams(location.search)
             const f = params.get('filter') || params.get('type')
             if (f && ['live', 'upcoming', 'recorded', 'all'].includes(f)) setFilter(f)
-        } catch (err) { }
+        } catch (err) { /* ignore */ }
     }, [location.search])
 
     const loadItems = () => {
