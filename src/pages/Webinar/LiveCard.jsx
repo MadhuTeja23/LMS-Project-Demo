@@ -10,17 +10,28 @@ const LiveCard = ({ item }) => {
       whileHover={{ y: -5, boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}
       transition={{ type: 'spring', stiffness: 300 }}
     >
-      {item.cover && <div className="card-cover"><img src={item.cover} alt="cover" /></div>}
-      <div style={{ padding: '10px' }}>
-        <div className="ci-title">{item.title}</div>
-        <div className="ci-time">{item.dateTime ? new Date(item.dateTime).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) : 'No date'}</div>
-        <div className="ci-notes">{item.notes && item.notes.slice(0, 120)}</div>
-        <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <span style={{ fontSize: 12, color: '#0f172a', fontWeight: 600 }}>Live</span>
-            {item.memberLimit && <div style={{ fontSize: 12, color: '#64748b' }}>Limit: {item.memberLimit}</div>}
+      {item.cover && (
+        <div className="card-cover">
+          <img src={item.cover} alt="cover" />
+          <div className="card-overlay">
+            <div className="card-overlay-title">{item.title}</div>
+            <div className="card-overlay-meta">
+              {item.dateTime ? new Date(item.dateTime).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) : 'Live Now'}
+            </div>
           </div>
-          <button className="btn" onClick={() => navigate(`/webinar/${item.id}`, { state: { item } })}>View</button>
+        </div>
+      )}
+      <div style={{ padding: '16px' }}>
+        {/* Title and Time moved to overlay */}
+        <div className="ci-notes">{item.notes && item.notes.slice(0, 100)}{item.notes && item.notes.length > 100 ? '...' : ''}</div>
+        <div style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <span style={{ fontSize: 12, color: '#ef4444', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ width: 6, height: 6, background: '#ef4444', borderRadius: '50%' }}></span>
+              Live
+            </span>
+          </div>
+          <button className="btn" onClick={() => navigate(`/webinar/${item.id}`, { state: { item } })} style={{ padding: '8px 16px', fontSize: '13px' }}>Join</button>
         </div>
       </div>
     </motion.div>

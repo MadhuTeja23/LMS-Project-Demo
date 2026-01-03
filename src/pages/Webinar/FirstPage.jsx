@@ -3,7 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import LiveCard from './LiveCard'
 import UpcomingCard from './UpcomingCard'
 import RecordedCard from './RecordedCard'
-import { FiSearch, FiPlus } from 'react-icons/fi'
+import { FiSearch, FiPlus, FiRadio, FiCalendar, FiVideo } from 'react-icons/fi'
+import './FirstPage.css'
 
 const FirstPage = () => {
   const navigate = useNavigate()
@@ -98,30 +99,56 @@ const FirstPage = () => {
   });
 
   return (
-    <div className="container-fluid py-4">
-
-      {/* Empty State */}
+    <div className="webinar-firstpage">
+      {/* Empty State - Hero Section */}
       {!hasAny && (
-        <div className="row justify-content-center">
-          <div className="col-12 col-md-8 col-lg-6">
-            <div className="card shadow-sm border-0 text-center">
-              <div className="card-body p-5">
-                <h2 className="text-primary fw-bold mb-3">Webinar Management </h2>
-                <div className="text-muted mb-4">
-                  <p className="mb-2">
-                    🚀 Host free webinars to expand your lead pool or find your best leads with paid webinars.
-                  </p>
-                  <p className="mb-2">
-                    ✨ Create and publish new webinars to get started.
-                  </p>
-                </div>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => navigate('/webinar/webinars?create=1')}
-                >
-                  <FiPlus className="me-2" /> Schedule a Webinar
-                </button>
+        <div className="webinar-empty-state">
+          {/* Hero Content */}
+          <div className="webinar-hero">
+            <h1 className="webinar-hero-title">
+              Grow your audience with <span className="text-highlight">Webinars</span>
+            </h1>
+            <p className="webinar-hero-subtitle">
+              Host engaging live sessions, schedule upcoming events, and share recordings with your audience appropriately.
+            </p>
+            <button
+              className="webinar-cta-btn"
+              onClick={() => navigate('/webinar/webinars?create=1')}
+            >
+              Start Your First Webinar
+            </button>
+          </div>
+
+          {/* Feature Cards */}
+          <div className="webinar-features-grid">
+            <div className="webinar-feature-card">
+              <div className="feature-icon feature-icon-live">
+                <FiRadio />
               </div>
+              <h3 className="feature-title">Go Live Instantly</h3>
+              <p className="feature-description">
+                Launch live sessions to connect with your students in real-time.
+              </p>
+            </div>
+
+            <div className="webinar-feature-card">
+              <div className="feature-icon feature-icon-schedule">
+                <FiCalendar />
+              </div>
+              <h3 className="feature-title">Schedule Events</h3>
+              <p className="feature-description">
+                Plan ahead and let your audience register for upcoming sessions.
+              </p>
+            </div>
+
+            <div className="webinar-feature-card">
+              <div className="feature-icon feature-icon-record">
+                <FiVideo />
+              </div>
+              <h3 className="feature-title">Automated Recordings</h3>
+              <p className="feature-description">
+                Never miss a moment. All sessions are recorded for future viewing.
+              </p>
             </div>
           </div>
         </div>
@@ -129,7 +156,7 @@ const FirstPage = () => {
 
       {/* Header & Dashboard */}
       {hasAny && (
-        <>
+        <div className="container-fluid py-3">
           <div className="row g-3 mb-4">
             <div className="col-12 col-md-5">
               <div className="input-group">
@@ -188,7 +215,7 @@ const FirstPage = () => {
               ))
             )}
           </div>
-        </>
+        </div>
       )}
     </div>
   )
