@@ -50,6 +50,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <SidebarItem to="/users" icon="people" label="Users" />
             <SidebarItem to="/exams" icon="pencil-square" label="Exams" />
             <SidebarItem to="/webinar" icon="camera-video" label="Webinar" />
+            <SidebarItem to="/fee" icon="cash-coin" label="Fee Management" />
             <SidebarItem to="/certificates" icon="patch-check" label="Certificates" />
             <SidebarItem to="/marketing" icon="bar-chart-line" label="Marketing" />
             <SidebarItem to="/affiliatemarketing" icon="link-45deg" label="Affiliate" />

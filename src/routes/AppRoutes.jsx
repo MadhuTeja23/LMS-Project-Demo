@@ -15,6 +15,8 @@ const Certificates = lazy(() => import('../pages/Certificates/templates/Certific
 const AffiliateMarketing = lazy(() => import('../pages/AffiliateMarketing/AffiliateMarketing'));
 const Users = lazy(() => import('../pages/Users/Users'));
 const Settings = lazy(() => import('../pages/Settings/Settings'));
+const FeeManagement = lazy(() => import('../pages/FeeManagement/fee'));
+const CreateFee = lazy(() => import('../pages/FeeManagement/CreateFee'));
 const NotFound = lazy(() => import('../pages/NotFound'));
 
 const AppRoutes = () => {
@@ -36,7 +38,10 @@ const AppRoutes = () => {
           <Route path="/affiliatemarketing" element={<AffiliateMarketing />} />
           <Route path="/myapp" element={<MyApp />} />
           <Route path="/websites" element={<Websites />} />
+          <Route path="/websites" element={<Websites />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/fee" element={<FeeManagement />} />
+          <Route path="/fee/create" element={<CreateFee />} />
 
           {/* Catch-all 404 Route */}
           <Route path="*" element={<NotFound />} />

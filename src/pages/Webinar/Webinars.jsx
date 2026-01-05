@@ -3,15 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-import LiveCard from './LiveCard'
-import UpcomingCard from './UpcomingCard'
-import RecordedCard from './RecordedCard'
-import { FiArrowLeft, FiLayout, FiCalendar, FiClock, FiAlignLeft, FiUsers, FiImage, FiUploadCloud, FiChevronDown, FiCheckCircle, FiChevronLeft } from 'react-icons/fi'
-import WebinarHosts from './components/WebinarHostsV2'
+import { createPortal } from 'react-dom'
+import WebinarCard from './WebinarCard'
+import { FiArrowLeft, FiLayout, FiCalendar, FiClock, FiAlignLeft, FiUsers, FiImage, FiUploadCloud, FiChevronDown, FiCheckCircle, FiChevronLeft, FiX, FiLink, FiDownload, FiAlertTriangle, FiCopy, FiZap } from 'react-icons/fi'
+import WebinarHosts from './components/WebinarHosts'
 import LearningOutcomes from './components/LearningOutcomes'
 import Testimonials from './components/Testimonials'
 
-const Webinars = () => {
+const Webinars = ({ isModal = false, onClose }) => {
     const navigate = useNavigate()
     const [title, setTitle] = useState('')
     const [dateTime, setDateTime] = useState('')
@@ -19,6 +18,7 @@ const Webinars = () => {
     const [durationMinutes, setDurationMinutes] = useState(0)
     const [notes, setNotes] = useState('')
     const [showSuccess, setShowSuccess] = useState(false)
+    const [publishedItem, setPublishedItem] = useState(null)
     const getRandomCover = () => {
         const covers = [
             'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=1000', // Study/Notebook
@@ -156,15 +156,20 @@ const Webinars = () => {
         try {
             sessionStorage.setItem(`webinar-${newItem.id}`, JSON.stringify(newItem));
             window.dispatchEvent(new Event('webinar-added'));
+            setPublishedItem(newItem)
+            setShowSuccess(true)
         } catch (err) { console.error(err) }
-
-        setShowSuccess(true)
     }
 
     const handleNavigateToDashboard = () => {
-        navigate(`/webinar`)
+        if (isModal && onClose) {
+            onClose();
+        } else {
+            navigate(`/webinar`)
+        }
     }
 
+    // Filter items logic - only relevant if NOT in modal
     const visible = items.filter(i => filter === 'all' ? true : (i.type === filter))
 
     const containerVariants = {
@@ -189,19 +194,43 @@ const Webinars = () => {
     };
 
     return (
-        <div className="create-page">
+        <div className="create-page" style={isModal ? { minHeight: 'auto', padding: '24px', background: 'transparent' } : {}}>
             <header className="create-header">
                 <div className="left">
-                    <button className="link-back" onClick={() => navigate(-1)}>
-                        <FiArrowLeft size={20} />
-                    </button>
-                    <h2 style={{ color: '#ffffff' }}>Create a webinar</h2>
+                    {!isModal && (
+                        <button className="link-back" onClick={() => navigate(-1)}>
+                            <FiArrowLeft size={20} />
+                        </button>
+                    )}
+                    <h2 style={{ color: '#1e293b' }}>Create a webinar</h2>
                 </div>
                 <div className="right">
-                    <button className="btn btn-success" onClick={handlePublish} style={{ padding: '10px 20px', fontWeight: 600 }}>
-                        <FiUploadCloud size={18} style={{ marginRight: 8 }} />
-                        Publish
-                    </button>
+
+
+                    {isModal && onClose && (
+                        <button
+                            onClick={onClose}
+                            style={{
+                                marginLeft: '12px',
+                                background: '#fff',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '50%',
+                                width: '40px',
+                                height: '40px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                color: '#64748b',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                transition: 'all 0.2s'
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = '#fee2e2'; e.currentTarget.style.background = '#fef2f2'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.color = '#64748b'; e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.background = '#fff'; }}
+                        >
+                            <FiX size={20} />
+                        </button>
+                    )}
                 </div>
             </header>
 
@@ -403,6 +432,10 @@ const Webinars = () => {
 
                 </div>
 
+
+
+
+
                 <motion.aside
                     className="create-sidebar"
                     style={{ alignSelf: 'start', position: 'sticky', top: '20px' }}
@@ -410,6 +443,27 @@ const Webinars = () => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.6, delay: 0.2 }}
                 >
+                    {/* Sidebar Publish Button */}
+                    <button
+                        className="btn btn-success"
+                        onClick={handlePublish}
+                        style={{
+                            width: '100%',
+                            padding: '16px',
+                            fontWeight: 700,
+                            fontSize: '16px',
+                            marginBottom: '24px',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                        }}
+                    >
+                        <FiUploadCloud size={20} />
+                        Publish Webinar
+                    </button>
                     <div className="upload-box">
                         <div style={{ marginBottom: '16px', fontWeight: 700, fontSize: '14px', color: '#1e293b', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Webinar Preview Card</div>
 
@@ -528,68 +582,340 @@ const Webinars = () => {
                         </button>
                     </div>
                 </motion.aside>
-            </motion.div>
+            </motion.div >
 
-            <section style={{ padding: '18px 28px' }}>
-
-                <motion.div
-                    className="webinar-cards"
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="show"
-                >
-
-                    {visible.map(item => (
-                        <motion.div key={item.id} className="webinar-grid-item" variants={itemVariants}>
-                            {item.type === 'live' && <LiveCard item={item} />}
-                            {item.type === 'upcoming' && <UpcomingCard item={item} />}
-                            {item.type === 'recorded' && <RecordedCard item={item} />}
+            {/* Only show existing cards if NOT in modal mode (keep modal focused on create) */}
+            {
+                !isModal && (
+                    <section style={{ padding: '18px 28px' }}>
+                        <motion.div
+                            className="webinar-cards"
+                            variants={containerVariants}
+                            initial="hidden"
+                            animate="show"
+                        >
+                            {visible.map(item => (
+                                <motion.div key={item.id} className="webinar-grid-item" variants={itemVariants}>
+                                    <WebinarCard item={item} />
+                                </motion.div>
+                            ))}
                         </motion.div>
-                    ))}
-                </motion.div>
-            </section>
+                    </section>
+                )
+            }
 
 
             {/* Success Modal */}
-            <AnimatePresence>
-                {showSuccess && (
-                    <div className="modal-overlay" style={{ background: 'rgba(15, 23, 42, 0.8)' }}>
-                        <motion.div
-                            className="modal"
-                            style={{ textAlign: 'center', width: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                        >
+            {/* Success Modal */}
+            {/* Success Modal */}
+            {
+                createPortal(
+                    <AnimatePresence>
+                        {showSuccess && publishedItem && (
                             <div style={{
-                                width: '80px',
-                                height: '80px',
-                                background: '#dcfce7',
-                                borderRadius: '50%',
+                                position: 'fixed',
+                                top: 0,
+                                left: 0,
+                                width: '100vw',
+                                height: '100vh',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                color: '#16a34a',
-                                fontSize: '40px'
+                                zIndex: 2147483647,
+                                background: 'rgba(15, 23, 42, 0.6)', // Darker dim for focus
+                                backdropFilter: 'blur(8px)',
+                                margin: 0,
+                                padding: 0,
+                                boxSizing: 'border-box'
                             }}>
-                                <FiCheckCircle />
+                                <motion.div
+                                    style={{
+                                        width: '900px',
+                                        maxWidth: '95vw',
+                                        background: '#fff',
+                                        borderRadius: '32px', // Extra rounded matching screenshot
+                                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                                        position: 'relative',
+                                        margin: 'auto',
+                                        overflow: 'hidden',
+                                        display: 'flex',
+                                        flexDirection: 'column'
+                                    }}
+                                    initial={{ scale: 0.95, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0.95, opacity: 0 }}
+                                    transition={{ type: 'spring', duration: 0.4 }}
+                                >
+                                    {/* Header */}
+                                    <div style={{
+                                        padding: '24px 32px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between'
+                                    }}>
+                                        <h3 style={{
+                                            fontSize: '24px',
+                                            fontWeight: 800,
+                                            color: '#1e293b',
+                                            margin: 0,
+                                            fontFamily: 'Plus Jakarta Sans, sans-serif'
+                                        }}>
+                                            Share
+                                        </h3>
+                                        <button
+                                            onClick={handleNavigateToDashboard}
+                                            style={{
+                                                background: 'transparent',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                color: '#64748b',
+                                                padding: '8px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                        >
+                                            <FiX size={24} />
+                                        </button>
+                                    </div>
+
+                                    {/* Content Grid */}
+                                    <div style={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        padding: '0 32px 40px',
+                                        gap: '40px'
+                                    }}>
+                                        {/* Left Column: Actions */}
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+                                            {/* Bank Warning (Conditional - showing logic simplified for demo matching the image) */}
+                                            {isPaid && (
+                                                <div style={{
+                                                    background: '#f1f5f9',
+                                                    borderRadius: '16px',
+                                                    padding: '16px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    gap: '12px'
+                                                }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                        <FiAlertTriangle size={20} color="#eab308" />
+                                                        <span style={{ fontSize: '13px', fontWeight: 600, color: '#475569', lineHeight: 1.4 }}>
+                                                            Connect your bank account<br />to start receiving payments
+                                                        </span>
+                                                    </div>
+                                                    <button style={{
+                                                        background: '#fff',
+                                                        border: '1px solid #e2e8f0',
+                                                        borderRadius: '20px',
+                                                        padding: '6px 16px',
+                                                        fontSize: '13px',
+                                                        fontWeight: 600,
+                                                        color: '#1e293b',
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px'
+                                                    }}>
+                                                        <FiZap size={14} /> Connect
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* Spacer if no warning */}
+                                            {/* Success Message Content (Fills the gap) */}
+                                            <div style={{ marginTop: '12px' }}>
+                                                <h4 style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>
+                                                    Ready to go live?
+                                                </h4>
+                                                <p style={{ fontSize: '14px', color: '#64748b', lineHeight: '1.5', margin: 0 }}>
+                                                    Your webinar has been successfully scheduled. Share the link below with your audience to start getting registrations.
+                                                </p>
+                                            </div>
+
+                                            {/* Link Input (Pushed to bottom) */}
+                                            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                                <div style={{
+                                                    background: '#f8fafc',
+                                                    border: '1px solid #e2e8f0',
+                                                    borderRadius: '12px',
+                                                    padding: '4px 4px 4px 16px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between'
+                                                }}>
+                                                    <span style={{
+                                                        fontSize: '14px',
+                                                        color: '#3b82f6',
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        marginRight: '12px'
+                                                    }}>
+                                                        https://gyantrix.com/sessions/{publishedItem.id}
+                                                    </span>
+                                                    <button style={{
+                                                        background: 'transparent',
+                                                        border: 'none',
+                                                        padding: '10px',
+                                                        cursor: 'pointer',
+                                                        color: '#64748b'
+                                                    }}>
+                                                        <FiCopy size={18} />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Download Button */}
+                                            <button style={{
+                                                width: '100%',
+                                                background: '#3b82f6',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '24px', // Pill shape
+                                                padding: '16px',
+                                                fontSize: '16px',
+                                                fontWeight: 600,
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '8px',
+                                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                                                marginTop: '12px'
+                                            }}>
+                                                <FiDownload size={20} /> Download Resource
+                                            </button>
+
+                                        </div>
+
+                                        {/* Right Column: Preview Card */}
+                                        <div style={{
+                                            flex: 1,
+                                            background: '#f8fafc',
+                                            borderRadius: '24px',
+                                            padding: '24px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>
+                                            {/* The "Social Poster" Look */}
+                                            <div style={{
+                                                width: '100%',
+                                                aspectRatio: '1',
+                                                borderRadius: '16px',
+                                                background: 'linear-gradient(135deg, #a78bfa 0%, #818cf8 100%)', // Light Purple Gradient
+                                                padding: '24px',
+                                                position: 'relative',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                justifyContent: 'space-between',
+                                                boxShadow: '0 10px 30px -5px rgba(167, 139, 250, 0.4)',
+                                                overflow: 'hidden'
+                                            }}>
+                                                {/* Background Pattern (Optional subtle circles) */}
+                                                <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '150px', height: '150px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }}></div>
+                                                <div style={{ position: 'absolute', bottom: '-20%', left: '-20%', width: '200px', height: '200px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }}></div>
+
+                                                <div style={{ position: 'relative', zIndex: 1 }}>
+                                                    {/* Badge */}
+                                                    <div style={{
+                                                        background: 'white',
+                                                        padding: '6px 12px',
+                                                        borderRadius: '20px',
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                        fontSize: '12px',
+                                                        fontWeight: 700,
+                                                        color: '#1e293b',
+                                                        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                                                    }}>
+                                                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#000' }}></div>
+                                                        Webinar
+                                                    </div>
+
+                                                    {/* Title */}
+                                                    <h2 style={{
+                                                        fontSize: '32px',
+                                                        fontWeight: 800,
+                                                        color: '#1e293b',
+                                                        marginTop: '24px',
+                                                        marginBottom: '8px',
+                                                        lineHeight: 1.2
+                                                    }}>
+                                                        {publishedItem.title}
+                                                    </h2>
+
+                                                    {/* Date */}
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px',
+                                                        color: '#334155',
+                                                        fontSize: '14px',
+                                                        fontWeight: 600
+                                                    }}>
+                                                        <FiCalendar />
+                                                        {new Date(publishedItem.dateTime).toLocaleString('en-US', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                    </div>
+                                                </div>
+
+                                                <div style={{ position: 'relative', zIndex: 1 }}>
+                                                    {/* Host */}
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                        <div style={{
+                                                            width: '40px',
+                                                            height: '40px',
+                                                            borderRadius: '50%',
+                                                            background: '#fcb900', // Orange placeholder color from image
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            color: 'white',
+                                                            fontWeight: 700
+                                                        }}>
+                                                            G
+                                                        </div>
+                                                        <span style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b' }}>
+                                                            gyantrixacademy
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* FREE Ribbon logic */}
+                                                {!isPaid && (
+                                                    <div style={{
+                                                        position: 'absolute',
+                                                        bottom: '30px',
+                                                        right: '-40px',
+                                                        background: '#fff',
+                                                        color: '#1e293b',
+                                                        fontWeight: 800,
+                                                        fontSize: '12px',
+                                                        padding: '4px 40px',
+                                                        transform: 'rotate(-45deg)',
+                                                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '1px'
+                                                    }}>
+                                                        FREE
+                                                    </div>
+                                                )}
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
                             </div>
-                            <div>
-                                <h3 style={{ fontSize: '24px', fontWeight: 800, color: '#1e293b', margin: '0 0 8px 0' }}>Congrats!</h3>
-                                <p style={{ color: '#64748b', margin: 0 }}>Your webinar has been successfully published.</p>
-                            </div>
-                            <button
-                                className="btn publish"
-                                style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: '16px' }}
-                                onClick={handleNavigateToDashboard}
-                            >
-                                Go to Dashboard
-                            </button>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-        </div>
+                        )}
+                    </AnimatePresence>,
+                    document.body
+                )
+            }
+        </div >
     )
 }
 

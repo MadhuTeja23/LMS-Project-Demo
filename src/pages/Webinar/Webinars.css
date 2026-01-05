@@ -6,12 +6,6 @@
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     color: #1e293b;
     background-color: #f8fafc;
-    background-image:
-        radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
-        radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
-        radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
-    background-size: 100% 600px;
-    background-repeat: no-repeat;
     min-height: 100vh;
 }
 
@@ -28,16 +22,12 @@
     font-size: 32px;
     font-weight: 800;
     letter-spacing: -0.03em;
-    color: #ffffff !important;
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.4);
+    color: #1e293b !important;
     z-index: 10;
     position: relative;
     display: inline-block;
-    /* Ensure block formatting context */
     opacity: 1;
-    /* Force opacity */
     visibility: visible;
-    /* Force visibility */
 }
 
 /* ... existing styles ... */
@@ -387,7 +377,7 @@ input:checked+.slider {
     margin: 0;
     font-size: 24px;
     font-weight: 700;
-    color: #ffffff !important;
+    color: #1e293b !important;
     background: none;
     -webkit-text-fill-color: initial;
 }

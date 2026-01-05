@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import LiveCard from './LiveCard'
-import UpcomingCard from './UpcomingCard'
-import RecordedCard from './RecordedCard'
-import { FiSearch, FiPlus, FiRadio, FiCalendar, FiVideo } from 'react-icons/fi'
+import WebinarCard from './WebinarCard'
+import { FiSearch, FiPlus, FiRadio, FiCalendar, FiVideo, FiX } from 'react-icons/fi'
+import { createPortal } from 'react-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import Webinars from './Webinars'
 import './FirstPage.css'
 
 const FirstPage = () => {
@@ -23,6 +24,7 @@ const FirstPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [counts, setCounts] = useState({ live: 0, upcoming: 0, recorded: 0 })
   const [loadError, setLoadError] = useState(null)
+  const [showCreateModal, setShowCreateModal] = useState(false)
 
   useEffect(() => {
     const params = new URLSearchParams(location.search)
@@ -113,7 +115,7 @@ const FirstPage = () => {
             </p>
             <button
               className="webinar-cta-btn"
-              onClick={() => navigate('/webinar/webinars?create=1')}
+              onClick={() => setShowCreateModal(true)}
             >
               Start Your First Webinar
             </button>
@@ -187,7 +189,7 @@ const FirstPage = () => {
             <div className="col-12 col-md-4 text-md-end">
               <button
                 className="btn btn-success w-100 w-md-auto"
-                onClick={() => navigate('/webinar/webinars?create=1')}
+                onClick={() => setShowCreateModal(true)}
               >
                 <FiPlus className="me-2" /> Schedule Webinar
               </button>
@@ -207,9 +209,7 @@ const FirstPage = () => {
               filteredItems.map(item => (
                 <div key={item.id} className="col-12 col-sm-6 col-lg-4">
                   <div className="h-100">
-                    {item.type === 'live' && <LiveCard item={item} />}
-                    {item.type === 'upcoming' && <UpcomingCard item={item} />}
-                    {item.type === 'recorded' && <RecordedCard item={item} />}
+                    <WebinarCard item={item} />
                   </div>
                 </div>
               ))
@@ -217,6 +217,59 @@ const FirstPage = () => {
           </div>
         </div>
       )}
+
+      {/* Create Modal Portal */}
+      {createPortal(
+        <AnimatePresence>
+          {showCreateModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                zIndex: 9999,
+                background: 'rgba(15, 23, 42, 0.6)',
+                backdropFilter: 'blur(8px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '20px'
+              }}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                transition={{ type: 'spring', duration: 0.5 }}
+                style={{
+                  width: '100%',
+                  maxWidth: '1200px',
+                  height: '90vh',
+                  background: '#f8fafc',
+                  borderRadius: '24px',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+                }}
+              >
+
+
+                {/* Render the Create Form - passing props to adjust its layout */}
+                <div style={{ height: '100%', overflowY: 'auto' }}>
+                  <Webinars isModal={true} onClose={() => setShowCreateModal(false)} />
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
     </div>
   )
 }
