@@ -394,3 +394,284 @@
     margin: 32px 0;
     opacity: 0.5;
 }
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-content {
+    background: var(--bg-app);
+    border: 1px solid var(--glass-border);
+    width: 100%;
+    max-width: 500px;
+    border-radius: 20px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.modal-body {
+    padding: 24px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 20px 24px;
+    border-top: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Invoice Preview Layout */
+.invoice-preview {
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    color: #1e293b;
+    font-family: 'Courier New', Courier, monospace;
+    /* Monospaced for receipt feel */
+}
+
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 2px dashed #cbd5e1;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+.invoice-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.invoice-total {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #1e293b;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 800;
+    font-size: 18px;
+}
+
+/* Timeline/Installment Steps */
+.timeline-container {
+    position: relative;
+    padding-left: 20px;
+    border-left: 2px solid #e2e8f0;
+    margin-left: 10px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -27px;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #6366f1;
+    border: 3px solid white;
+    box-shadow: 0 0 0 1px #e2e8f0;
+}
+
+/* ... existing styles ... */
+
+/* Utility Layouts */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+}
+
+.controls-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .fee-container {
+        padding: 20px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .fee-container {
+        padding: 16px;
+    }
+
+    /* Header stacks on mobile */
+    .fee-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .fee-header>div {
+        width: 100%;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .fee-title h1 {
+        font-size: 24px;
+    }
+
+    /* Stats Stack singly */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    /* Form Grids stack */
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+        padding-bottom: 8px;
+        margin-bottom: 24px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Modals need more space on mobile */
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+        max-height: 85vh;
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+
+    .invoice-preview {
+        padding: 20px;
+    }
+
+    /* Adjust Buttons and Inputs */
+    .btn-primary,
+    .btn-icon {
+        padding: 8px 14px;
+        font-size: 13px;
+        height: auto;
+        min-height: 36px;
+    }
+
+    .form-input,
+    .form-select {
+        width: 100%;
+        /* Ensure full width on mobile */
+    }
+
+    /* Charts Section in Reports (needs utility class in JSX) */
+    .charts-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Installment rows in CreateFee */
+    .timeline-item>div {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 8px;
+    }
+
+    .timeline-item>div>div {
+        width: 100% !important;
+        flex: none !important;
+        margin-bottom: 4px;
+    }
+
+    .timeline-item .btn-icon {
+        align-self: flex-end;
+    }
+
+    /* Controls wrap in dashboards */
+    .controls-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .controls-left,
+    .controls-right {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .glass-card {
+        padding: 16px;
+        /* Reduce padding on mobile cards */
+    }
+}
+
+@media (max-width: 480px) {
+    .fee-title h1 {
+        font-size: 20px;
+    }
+
+    .nav-tab {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
+    .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .invoice-header {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .invoice-header>div {
+        text-align: left !important;
+    }
+}
