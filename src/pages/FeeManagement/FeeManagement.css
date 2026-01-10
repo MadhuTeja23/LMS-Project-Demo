@@ -303,6 +303,13 @@
     gap: 24px;
 }
 
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: stretch;
+}
+
 .form-group {
     display: flex;
     flex-direction: column;
@@ -565,7 +572,8 @@
     }
 
     /* Form Grids stack */
-    .form-grid {
+    .form-grid,
+    .settings-grid {
         grid-template-columns: 1fr;
     }
 
@@ -674,4 +682,26 @@
     .invoice-header>div {
         text-align: left !important;
     }
+}
+
+/* Batch Card Specifics */
+.batch-icon-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.batch-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.batch-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
 }

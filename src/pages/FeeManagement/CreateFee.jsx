@@ -359,7 +359,12 @@ const CreateFee = () => {
                             value={paymentConfig.schedule}
                             onChange={(e) => setPaymentConfig({ ...paymentConfig, schedule: e.target.value })}
                         >
-                            <option value="OnTime">One-Time Payment</option>
+                            <option value="OneTime">One-Time Payment</option>
+                            <option value="Monthly">Monthly</option>
+                            <option value="Quarterly">Quarterly</option>
+                            <option value="4Months">Every 4 Months</option>
+                            <option value="HalfYearly">Half Yearly (6 Months)</option>
+                            <option value="Yearly">Yearly</option>
                             <option value="Installments">Custom Installments</option>
                         </select>
                     </div>

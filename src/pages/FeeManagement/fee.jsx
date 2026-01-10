@@ -2,20 +2,23 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    FiGrid, FiList, FiDollarSign, FiUsers, FiPieChart, FiTrendingUp,
+    FiGrid, FiList, FiUsers, FiPieChart, FiTrendingUp,
     FiMoreVertical, FiFilter, FiDownload, FiPlus, FiSearch, FiCalendar,
-    FiSettings, FiCreditCard, FiActivity, FiTag, FiAward, FiRefreshCcw,
-    FiFileText, FiCheckCircle, FiAlertCircle
+    FiSettings, FiCreditCard, FiActivity, FiLayers, FiRefreshCcw,
+    FiCheckCircle, FiAlertCircle
 } from 'react-icons/fi';
 import './FeeManagement.css';
 import FeePayments from './FeePayments';
-import FeeReports from './FeeReports';
 import FeeRefunds from './FeeRefunds';
+import FeeSettings from './FeeSettings';
+import FeeBatches from './FeeBatches';
+
+import { FaRupeeSign } from 'react-icons/fa';
 
 // --- FeeDashboard Component ---
 const FeeDashboard = () => {
     const kpiData = [
-        { title: "Total Collection", value: "₹24,50,000", icon: <FiDollarSign />, color: "linear-gradient(135deg, #10b981 0%, #059669 100%)", subtitle: "This Year" },
+        { title: "Total Collection", value: "₹24,50,000", icon: <FaRupeeSign />, color: "linear-gradient(135deg, #10b981 0%, #059669 100%)", subtitle: "This Year" },
         { title: "Pending Amount", value: "₹4,20,500", icon: <FiAlertCircle />, color: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)", subtitle: "125 Students" },
         { title: "Overdue Amount", value: "₹1,15,000", icon: <FiActivity />, color: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", subtitle: "Action Required" },
         { title: "Monthly Revenue", value: "₹3,45,000", icon: <FiTrendingUp />, color: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)", subtitle: "Jan 2026" },
@@ -171,10 +174,10 @@ const FeeManagement = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
 
     const tabs = [
-        { id: 'dashboard', label: 'Dashboard', icon: <FiGrid /> },
-        { id: 'pricing', label: 'Fee Structures', icon: <FiList /> }, // Renamed from Pricing Plans
+        { id: 'dashboard', label: 'Overview', icon: <FiGrid /> },
+        { id: 'batches', label: 'Batches', icon: <FiLayers /> },
+        { id: 'structures', label: 'Fee Structures', icon: <FiList /> },
         { id: 'payments', label: 'Payments', icon: <FiCreditCard /> },
-        { id: 'reports', label: 'Reports', icon: <FiPieChart /> },
         { id: 'refunds', label: 'Refunds', icon: <FiRefreshCcw /> },
         { id: 'settings', label: 'Settings', icon: <FiSettings /> },
     ];
@@ -183,23 +186,22 @@ const FeeManagement = () => {
         <div className="fee-container">
             {/* Header */}
             <header className="fee-header">
-                <div className="fee-title">
-                    <h1>Fee Management</h1>
-                    <div className="fee-subtitle">Manage payments, structures, and financial reports</div>
+                <div>
+                    <div className="fee-title">
+                        <h1>Fee Management</h1>
+                    </div>
+                    <div className="fee-subtitle">Manage student fees, batches, and payments</div>
                 </div>
+
                 <div style={{ display: 'flex', gap: '16px' }}>
                     <div className="glass-card" style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <FiSearch color="#64748b" />
                         <input
                             type="text"
-                            placeholder="Search anything..."
+                            placeholder="Search..."
                             style={{ border: 'none', background: 'transparent', outline: 'none', minWidth: '200px' }}
                         />
                     </div>
-                    <button className="btn-primary" onClick={() => navigate('/fee/create')}>
-                        <FiPlus /> Create Fee
-                    </button>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#cbd5e1' }}></div>
                 </div>
             </header>
 
@@ -226,16 +228,20 @@ const FeeManagement = () => {
                     transition={{ duration: 0.2 }}
                 >
                     {activeTab === 'dashboard' && <FeeDashboard />}
+                    {activeTab === 'batches' && <FeeBatches />}
                     {activeTab === 'payments' && <FeePayments />}
-                    {activeTab === 'reports' && <FeeReports />}
                     {activeTab === 'refunds' && <FeeRefunds />}
+                    {activeTab === 'settings' && <FeeSettings />}
 
-                    {['pricing', 'settings'].includes(activeTab) && (
+                    {activeTab === 'structures' && (
                         <div className="glass-card" style={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <div style={{ textAlign: 'center', color: '#94a3b8' }}>
-                                <FiSettings size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                                <h3>{tabs.find(t => t.id === activeTab)?.label} Module</h3>
-                                <p>This module is currently under development.</p>
+                                <FiList size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+                                <h3>Fee Structures</h3>
+                                <p>Structure creator module coming soon.</p>
+                                <button className="btn-primary" style={{ margin: '16px auto' }} onClick={() => navigate('/fee/create')}>
+                                    <FiPlus /> Create New Structure
+                                </button>
                             </div>
                         </div>
                     )}
