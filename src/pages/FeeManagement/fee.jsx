@@ -76,18 +76,41 @@ const FeeDashboard = () => {
             <div className="charts-grid" style={{ marginBottom: 32 }}>
                 <div className="glass-card" style={{ height: '350px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
                     <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-                        <h3 style={{ margin: 0, fontSize: '18px' }}>Revenue Trends</h3>
-                        <select className="form-select" style={{ padding: '4px 8px', fontSize: 12 }}><option>Yearly</option></select>
+                        <h3 style={{ margin: 0, fontSize: '18px' }}>Monthly Collection</h3>
+                        <select className="form-select" style={{ padding: '4px 8px', fontSize: 12 }}>
+                            <option>2026</option>
+                            <option>2025</option>
+                        </select>
                     </div>
+
                     <div style={{ width: '100%', flex: 1, display: 'flex', alignItems: 'flex-end', gap: 12, paddingBottom: 12 }}>
-                        {[35, 55, 45, 70, 65, 85, 60, 75, 50, 60, 80, 90].map((h, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ height: 0 }}
-                                animate={{ height: `${h}%` }}
-                                transition={{ delay: i * 0.05 }}
-                                style={{ flex: 1, background: i === 11 ? '#6366f1' : '#e2e8f0', borderRadius: 4 }}
-                            />
+                        {[
+                            { m: 'Jan', h: 35 }, { m: 'Feb', h: 55 }, { m: 'Mar', h: 45 },
+                            { m: 'Apr', h: 70 }, { m: 'May', h: 65 }, { m: 'Jun', h: 85 },
+                            { m: 'Jul', h: 60 }, { m: 'Aug', h: 75 }, { m: 'Sep', h: 50 },
+                            { m: 'Oct', h: 60 }, { m: 'Nov', h: 80 }, { m: 'Dec', h: 90 }
+                        ].map((item, i) => (
+                            <div key={i} className="bar-group" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, height: '100%', justifyContent: 'flex-end', cursor: 'pointer' }}>
+                                <div style={{
+                                    fontSize: 10, fontWeight: 600, color: '#64748b',
+                                    opacity: 0, transform: 'translateY(10px)', transition: '0.2s'
+                                }} className="bar-value">
+                                    {item.h}k
+                                </div>
+                                <motion.div
+                                    initial={{ height: 0 }}
+                                    animate={{ height: `${item.h}%` }}
+                                    transition={{ delay: i * 0.05 }}
+                                    className="bar-fill"
+                                    style={{
+                                        width: '100%',
+                                        background: i === 11 ? 'var(--primary-gradient)' : '#e2e8f0',
+                                        borderRadius: 6,
+                                        minHeight: 4
+                                    }}
+                                />
+                                <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>{item.m}</span>
+                            </div>
                         ))}
                     </div>
                 </div>
@@ -193,16 +216,7 @@ const FeeManagement = () => {
                     <div className="fee-subtitle">Manage student fees, batches, and payments</div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '16px' }}>
-                    <div className="glass-card" style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FiSearch color="#64748b" />
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            style={{ border: 'none', background: 'transparent', outline: 'none', minWidth: '200px' }}
-                        />
-                    </div>
-                </div>
+
             </header>
 
             {/* Navigation */}

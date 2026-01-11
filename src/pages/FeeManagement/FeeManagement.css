@@ -227,6 +227,11 @@
     color: #dc2626;
 }
 
+.status-badge.partial {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+}
+
 /* Buttons */
 .btn-primary {
     background: var(--primary-gradient);
@@ -704,4 +709,15 @@
 .batch-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* Bar Chart Interactions */
+.bar-group:hover .bar-value {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+
+.bar-group:hover .bar-fill {
+    background: var(--primary-gradient) !important;
+    opacity: 0.8;
 }
