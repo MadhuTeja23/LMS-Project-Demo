@@ -18,56 +18,74 @@ const FeeBatches = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // --- 1) LOAD BATCHES ---
+    // --- 1) LOAD BATCHES (Unified Source of Truth) ---
     useEffect(() => {
-        fetchBatches();
+        initializeData();
     }, []);
 
-    const fetchBatches = async () => {
+    const initializeData = () => {
         setLoading(true);
         try {
-            const response = await fetch('/api/batches');
-            if (!response.ok) throw new Error('Failed to fetch batches');
-            const data = await response.json();
-            setBatches(data);
+            const storedData = localStorage.getItem('lms_fee_data');
+
+            if (storedData) {
+                // Load from storage
+                setBatches(JSON.parse(storedData));
+            } else {
+                // SEED INITIAL DATA
+                const initialBatches = [
+                    {
+                        id: 'batch-1', name: 'Full Stack Cohort 1', course: 'Full Stack Development', year: '2025-26', students: 5, collected: 75,
+                        studentList: [
+                            { id: 101, name: 'Aarav Patel', roll: 'FS-001', totalFee: 45000, paidAmount: 45000, lastPay: '2025-01-15' },
+                            { id: 102, name: 'Diya Sharma', roll: 'FS-002', totalFee: 45000, paidAmount: 30000, lastPay: '2024-12-10' },
+                            { id: 103, name: 'Rohan Gupta', roll: 'FS-003', totalFee: 45000, paidAmount: 0, lastPay: '-' },
+                            { id: 104, name: 'Sanya Singh', roll: 'FS-004', totalFee: 45000, paidAmount: 40000, lastPay: '2025-01-05' },
+                            { id: 105, name: 'Kabir Khan', roll: 'FS-005', totalFee: 45000, paidAmount: 45000, lastPay: '2025-01-12' },
+                        ]
+                    },
+                    {
+                        id: 'batch-2', name: 'Data Science Batch A', course: 'Data Science', year: '2025-26', students: 3, collected: 40,
+                        studentList: [
+                            { id: 201, name: 'Arjun Mehta', roll: 'DS-001', totalFee: 60000, paidAmount: 20000, lastPay: '2025-02-01' },
+                            { id: 202, name: 'Zara Ali', roll: 'DS-002', totalFee: 60000, paidAmount: 0, lastPay: '-' },
+                            { id: 203, name: 'Vihaan Reddy', roll: 'DS-003', totalFee: 60000, paidAmount: 60000, lastPay: '2024-11-20' },
+                        ]
+                    },
+                    {
+                        id: 'batch-3', name: 'React Native Special', course: 'Mobile App Dev', year: '2025', students: 2, collected: 90,
+                        studentList: [
+                            { id: 301, name: 'Ishaan Verma', roll: 'RN-001', totalFee: 30000, paidAmount: 27000, lastPay: '2025-01-18' },
+                            { id: 302, name: 'Mira Kapoor', roll: 'RN-002', totalFee: 30000, paidAmount: 27000, lastPay: '2025-01-19' },
+                        ]
+                    }
+                ];
+
+                // Add the old 'userCreatedBatches' if any, migrating them
+                const oldUserBatches = JSON.parse(localStorage.getItem('userCreatedBatches') || '[]');
+                const mergedBatches = [...initialBatches, ...oldUserBatches];
+
+                localStorage.setItem('lms_fee_data', JSON.stringify(mergedBatches));
+                setBatches(mergedBatches);
+            }
         } catch (err) {
             console.error(err);
-            // Fallback for demo if API fails (since no backend exists)
-            setBatches([
-                { id: 1, name: 'Full Stack Cohort 1', course: 'Full Stack Development', year: '2025-26', students: 45, collected: 75 },
-                { id: 2, name: 'Data Science Batch A', course: 'Data Science', year: '2025-26', students: 32, collected: 40 },
-                { id: 3, name: 'React Native Special', course: 'Mobile App Dev', year: '2025', students: 28, collected: 90 },
-                { id: 4, name: 'Backend Masters', course: 'Backend Engineering', year: '2026', students: 50, collected: 15 },
-                { id: 5, name: 'UI/UX Design Batch B', course: 'Product Design', year: '2025', students: 22, collected: 60 },
-            ]);
         } finally {
             setLoading(false);
         }
     };
 
     // --- 2) BATCH -> STUDENTS FLOW ---
-    const handleBatchClick = async (batch) => {
-        setLoading(true);
+    const handleBatchClick = (batch) => {
         setSelectedBatch(batch);
-        try {
-            const response = await fetch(`/api/batches/${batch.id}/students`);
-            if (!response.ok) throw new Error('Failed to fetch students');
-            const data = await response.json();
-            setStudents(data);
+        // Data is now always in studentList due to unified structure
+        if (batch.studentList) {
+            setStudents(batch.studentList);
             setView('list');
-        } catch (err) {
-            console.error(err);
-            // Mock Data Fallback
-            setStudents([
-                { id: 101, name: 'Aarav Patel', roll: 'FS-001', totalFee: 45000, paidAmount: 45000, lastPay: '2025-01-15' },
-                { id: 102, name: 'Diya Sharma', roll: 'FS-002', totalFee: 45000, paidAmount: 30000, lastPay: '2024-12-10' },
-                { id: 103, name: 'Rohan Gupta', roll: 'FS-003', totalFee: 45000, paidAmount: 0, lastPay: '-' },
-                { id: 104, name: 'Sanya Singh', roll: 'FS-004', totalFee: 45000, paidAmount: 40000, lastPay: '2025-01-05' },
-                { id: 105, name: 'Kabir Khan', roll: 'FS-005', totalFee: 45000, paidAmount: 45000, lastPay: '2025-01-12' },
-            ]);
+        } else {
+            // Fallback for legacy empty structure
+            setStudents([]);
             setView('list');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -90,39 +108,28 @@ const FeeBatches = () => {
     const handleStudentClick = async (student) => {
         setLoading(true);
         setSelectedStudent(student);
-        try {
-            // Fetch fee details
-            const feeRes = await fetch(`/api/students/${student.id}/fee-details`);
-            const paymentRes = await fetch(`/api/students/${student.id}/payments`); // Step 6
 
-            if (!feeRes.ok || !paymentRes.ok) throw new Error('Failed to fetch details');
+        // Simulate fetching details or extract from nested if extended
+        // For now using mock details derived from the student object + batch info
+        // In full app, we would store deep structure. Here we simulate structure based on totals.
 
-            const feeData = await feeRes.json();
-            const paymentData = await paymentRes.json();
-
-            setFeeDetails({ ...feeData, payments: paymentData });
-            setView('detail');
-        } catch (err) {
-            console.error(err);
-            // Mock Data Fallback
+        setTimeout(() => {
             setFeeDetails({
                 structure: [
-                    { name: 'Tuition Fee', amount: 40000 },
-                    { name: 'Registration', amount: 5000 }
+                    { name: 'Tuition Fee (Base)', amount: student.totalFee },
                 ],
-                totalFee: 45000,
+                totalFee: student.totalFee,
                 paidAmount: student.paidAmount || 0,
-                pendingAmount: (45000 - (student.paidAmount || 0)),
+                pendingAmount: (student.totalFee - (student.paidAmount || 0)),
                 dueDate: '2026-03-31',
                 payments: [
-                    { id: 'p1', date: '2025-01-10', mode: 'UPI', reference: 'TXN-883920', amount: 20000 },
-                    { id: 'p2', date: '2024-12-15', mode: 'Bank Transfer', reference: 'TXN-112344', amount: 10000 }
+                    // Mock payment if paid > 0
+                    ...(student.paidAmount > 0 ? [{ id: 'p1', date: student.lastPay || '2025-01-01', mode: 'Online', reference: 'TXN-AUTO', amount: student.paidAmount }] : [])
                 ]
             });
             setView('detail');
-        } finally {
             setLoading(false);
-        }
+        }, 300);
     };
 
     const handleBack = () => {
@@ -206,7 +213,62 @@ const FeeBatches = () => {
     };
 
 
+    // --- NEW: Remove Student from Batch ---
+    const handleRemoveStudent = (e, studentId) => {
+        e.stopPropagation();
+        if (!window.confirm('Remove this student from the batch?')) return;
+
+        // 1. Update Students List View
+        const updatedStudents = students.filter(s => s.id !== studentId);
+        setStudents(updatedStudents);
+
+        // 2. Update Batch Data (State & LocalStorage)
+        if (selectedBatch && String(selectedBatch.id).startsWith('custom-')) {
+            const storedBatches = JSON.parse(localStorage.getItem('userCreatedBatches') || '[]');
+            const batchIndex = storedBatches.findIndex(b => b.id === selectedBatch.id);
+
+            if (batchIndex !== -1) {
+                // Update Storage
+                storedBatches[batchIndex].studentList = updatedStudents;
+                storedBatches[batchIndex].students = updatedStudents.length;
+                localStorage.setItem('userCreatedBatches', JSON.stringify(storedBatches));
+
+                // Update Local State for Grid View consistency
+                setBatches(prev => prev.map(b => b.id === selectedBatch.id ? {
+                    ...b,
+                    students: updatedStudents.length,
+                    studentList: updatedStudents
+                } : b));
+
+                // Update Selected Batch Ref
+                setSelectedBatch(prev => ({ ...prev, students: updatedStudents.length, studentList: updatedStudents }));
+            }
+        }
+    };
+
     // --- Views ---
+
+    const handleDeleteBatch = (e, batchId) => {
+        e.stopPropagation();
+        if (!window.confirm('Are you sure you want to delete this fee batch?')) return;
+
+        setBatches(prev => prev.filter(b => b.id !== batchId));
+
+        if (String(batchId).startsWith('custom-')) {
+            const storedBatches = JSON.parse(localStorage.getItem('userCreatedBatches') || '[]');
+            const updatedStored = storedBatches.filter(b => b.id !== batchId);
+            localStorage.setItem('userCreatedBatches', JSON.stringify(updatedStored));
+        }
+    };
+
+    // Helper for dropdown
+    const [activeMenu, setActiveMenu] = useState(null);
+
+    useEffect(() => {
+        const closeMenu = () => setActiveMenu(null);
+        window.addEventListener('click', closeMenu);
+        return () => window.removeEventListener('click', closeMenu);
+    }, []);
 
     const BatchGrid = () => (
         <motion.div
@@ -214,7 +276,7 @@ const FeeBatches = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className="form-grid"
-            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
+            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', paddingBottom: 100 }}
         >
             {loading && <div className="glass-card" style={{ gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>Loading Batches...</div>}
 
@@ -223,14 +285,48 @@ const FeeBatches = () => {
                     key={batch.id}
                     className="glass-card batch-card"
                     onClick={() => handleBatchClick(batch)}
-                    style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
+                    style={{ cursor: 'pointer', position: 'relative' }} // Removed overflow:hidden to allow dropdown
                 >
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
                         <div className="batch-icon-placeholder">
                             <FiUsers size={20} color="white" />
                         </div>
-                        <div className={`status-badge ${batch.collected >= 80 ? 'paid' : batch.collected >= 40 ? 'pending' : 'overdue'}`}>
-                            {batch.collected}% Collected
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div className={`status-badge ${batch.collected >= 80 ? 'paid' : batch.collected >= 40 ? 'pending' : 'overdue'}`}>
+                                {batch.collected}% Collected
+                            </div>
+
+                            {/* Options Menu for Custom Batches */}
+                            {String(batch.id).startsWith('custom-') && (
+                                <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
+                                    <button
+                                        className="btn-icon"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setActiveMenu(activeMenu === batch.id ? null : batch.id);
+                                        }}
+                                        style={{ width: 28, height: 28 }}
+                                    >
+                                        <FiMoreVertical size={16} />
+                                    </button>
+
+                                    {activeMenu === batch.id && (
+                                        <div className="dropdown-menu show" style={{
+                                            position: 'absolute', right: 0, top: '100%',
+                                            minWidth: 120, zIndex: 10, marginTop: 4,
+                                            boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+                                        }}>
+                                            <button
+                                                className="dropdown-item text-danger"
+                                                onClick={(e) => handleDeleteBatch(e, batch.id)}
+                                                style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                                            >
+                                                <FiTrash2 size={14} /> Delete
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -314,11 +410,33 @@ const FeeBatches = () => {
                                             {due > 0 ? `₹${due.toLocaleString()}` : '-'}
                                         </td>
                                         <td>
-                                            <button className="btn-icon" style={{ width: 28, height: 28 }}><FiChevronRight /></button>
+                                            <div style={{ display: 'flex', gap: 8 }} onClick={e => e.stopPropagation()}>
+                                                <button className="btn-icon" style={{ width: 28, height: 28 }} onClick={() => handleStudentClick(student)}>
+                                                    <FiChevronRight />
+                                                </button>
+                                                {/* Allow removing students only from custom batches */}
+                                                {selectedBatch && String(selectedBatch.id).startsWith('custom-') && (
+                                                    <button
+                                                        className="btn-icon"
+                                                        style={{ width: 28, height: 28, color: '#ef4444', borderColor: '#fee2e2', background: '#fef2f2' }}
+                                                        onClick={(e) => handleRemoveStudent(e, student.id)}
+                                                        title="Remove Student"
+                                                    >
+                                                        <FiTrash2 size={12} />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 );
                             })}
+                            {students.length === 0 && (
+                                <tr>
+                                    <td colSpan="7" style={{ textAlign: 'center', padding: 20, color: 'var(--text-secondary)' }}>
+                                        No students in this batch.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 )}

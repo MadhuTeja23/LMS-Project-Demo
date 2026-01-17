@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     FiGrid, FiList, FiUsers, FiPieChart, FiTrendingUp,
@@ -24,6 +24,23 @@ const FeeDashboard = () => {
         { title: "Monthly Revenue", value: "₹3,45,000", icon: <FiTrendingUp />, color: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)", subtitle: "Jan 2026" },
     ];
 
+
+    const navigate = useNavigate();
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const transactionData = [
+        { id: 1, name: "Student Name 1", studentId: "2026001", type: "Tuition Fee", date: "Jan 06, 2026", amount: "₹12,000", status: "Pending" },
+        { id: 2, name: "Student Name 2", studentId: "2026002", type: "Tuition Fee", date: "Jan 07, 2026", amount: "₹12,000", status: "Paid" },
+        { id: 3, name: "Student Name 3", studentId: "2026003", type: "Tuition Fee", date: "Jan 08, 2026", amount: "₹12,000", status: "Pending" },
+        { id: 4, name: "Student Name 4", studentId: "2026004", type: "Tuition Fee", date: "Jan 09, 2026", amount: "₹12,000", status: "Paid" },
+        { id: 5, name: "Student Name 5", studentId: "2026005", type: "Tuition Fee", date: "Jan 10, 2026", amount: "₹12,000", status: "Pending" },
+    ];
+
+    const filteredTransactions = transactionData.filter(txn =>
+        txn.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        txn.studentId.includes(searchTerm)
+    );
+
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             {/* Filters Row */}
@@ -44,8 +61,13 @@ const FeeDashboard = () => {
                         type="text"
                         placeholder="Search student..."
                         style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%' }}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+                <button className="btn-primary" onClick={() => navigate('/fee/create')}>
+                    <FiPlus /> Create Fee Structure
+                </button>
             </div>
 
             {/* KPI Cards */}
@@ -115,28 +137,71 @@ const FeeDashboard = () => {
                     </div>
                 </div>
                 <div className="glass-card" style={{ height: '350px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-                    <h3 style={{ alignSelf: 'flex-start', margin: '0 0 20px 0', fontSize: '18px' }}>Payment Methods</h3>
-                    <div style={{ width: '180px', height: '180px', borderRadius: '50%', background: 'conic-gradient(#10b981 0% 40%, #3b82f6 40% 70%, #f59e0b 70% 100%)', position: 'relative' }}>
-                        <div style={{ position: 'absolute', inset: 30, background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(5px)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-                            <span style={{ fontSize: 12, color: '#64748b' }}>Total</span>
-                            <span style={{ fontSize: 18, fontWeight: 700 }}>1.2K</span>
-                            <span style={{ fontSize: 12, color: '#64748b' }}>Txns</span>
-                        </div>
-                    </div>
-                    <div style={{ width: '100%', marginTop: 20 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 8 }}>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 8, height: 8, background: '#10b981', borderRadius: '50%' }}></span> Online (UPI/Card)</span>
-                            <span>40%</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 8 }}>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 8, height: 8, background: '#3b82f6', borderRadius: '50%' }}></span> Net Banking</span>
-                            <span>30%</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 8, height: 8, background: '#f59e0b', borderRadius: '50%' }}></span> Cash / Cheque</span>
-                            <span>30%</span>
-                        </div>
-                    </div>
+                    <h3 style={{ alignSelf: 'flex-start', margin: '0 0 20px 0', fontSize: '18px' }}>Course Revenue Distribution</h3>
+
+                    {(() => {
+                        // 1. Calculate Data Dynamically
+                        const batches = JSON.parse(localStorage.getItem('lms_fee_data') || '[]');
+                        const revenueData = batches.map(b => ({
+                            name: b.name,
+                            value: (b.studentList || []).reduce((sum, s) => sum + (s.paidAmount || 0), 0)
+                        })).filter(d => d.value > 0);
+
+                        const totalRevenue = revenueData.reduce((acc, curr) => acc + curr.value, 0);
+
+                        // Colors Palette
+                        const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
+
+                        // If no revenue
+                        if (totalRevenue === 0) {
+                            return (
+                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 13 }}>
+                                    No revenue data available
+                                </div>
+                            );
+                        }
+
+                        // 2. Build Gradient String
+                        let currentDeg = 0;
+                        const gradientParts = revenueData.map((item, index) => {
+                            const percent = (item.value / totalRevenue) * 100;
+                            const start = currentDeg;
+                            currentDeg += percent;
+                            const color = COLORS[index % COLORS.length];
+                            return `${color} ${start}% ${currentDeg}%`;
+                        });
+                        const gradientString = `conic-gradient(${gradientParts.join(', ')})`;
+
+                        return (
+                            <>
+                                {/* Pie Chart */}
+                                <div style={{ width: '180px', height: '180px', borderRadius: '50%', background: gradientString, position: 'relative' }}>
+                                    <div style={{ position: 'absolute', inset: 30, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(5px)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
+                                        <span style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>Total</span>
+                                        <span style={{ fontSize: 16, fontWeight: 700, color: '#1e293b' }}>
+                                            {(totalRevenue / 1000).toFixed(1)}K
+                                        </span>
+                                        <span style={{ fontSize: 10, color: '#94a3b8' }}>INR</span>
+                                    </div>
+                                </div>
+
+                                {/* Legend */}
+                                <div style={{ width: '100%', marginTop: 24, paddingRight: 8, maxHeight: 100, overflowY: 'auto' }}>
+                                    {revenueData.map((item, index) => (
+                                        <div key={index} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 8, alignItems: 'center' }}>
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                <span style={{ width: 10, height: 10, background: COLORS[index % COLORS.length], borderRadius: '50%' }}></span>
+                                                <span style={{ color: '#334155', fontWeight: 500 }}>{item.name}</span>
+                                            </span>
+                                            <span style={{ fontWeight: 600, color: '#64748b' }}>
+                                                {((item.value / totalRevenue) * 100).toFixed(0)}%
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        );
+                    })()}
                 </div>
             </div>
 
@@ -159,29 +224,39 @@ const FeeDashboard = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {[1, 2, 3, 4, 5].map(i => (
-                                <tr key={i}>
-                                    <td>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: 12 }}>AU</div>
-                                            <div>
-                                                <div style={{ fontWeight: 500 }}>Student Name {i}</div>
-                                                <div style={{ fontSize: 11, color: '#94a3b8' }}>ID: 202600{i}</div>
+                            {filteredTransactions.length > 0 ? (
+                                filteredTransactions.map(txn => (
+                                    <tr key={txn.id}>
+                                        <td>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: 12 }}>
+                                                    {txn.name.split(' ').map(n => n[0]).join('')}
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontWeight: 500 }}>{txn.name}</div>
+                                                    <div style={{ fontSize: 11, color: '#94a3b8' }}>ID: {txn.studentId}</div>
+                                                </div>
                                             </div>
-                                        </div>
+                                        </td>
+                                        <td>{txn.type}</td>
+                                        <td>{txn.date}</td>
+                                        <td>{txn.amount}</td>
+                                        <td>
+                                            <span className={`status-badge ${txn.status === 'Paid' ? 'paid' : 'pending'}`}>
+                                                {txn.status === 'Paid' ? <FiCheckCircle /> : <FiAlertCircle />}
+                                                {txn.status}
+                                            </span>
+                                        </td>
+                                        <td><button className="btn-icon"><FiMoreVertical /></button></td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: '#94a3b8' }}>
+                                        No transactions found matching "{searchTerm}"
                                     </td>
-                                    <td>Tuition Fee</td>
-                                    <td>Jan {i + 5}, 2026</td>
-                                    <td>₹12,000</td>
-                                    <td>
-                                        <span className={`status-badge ${i % 2 === 0 ? 'paid' : 'pending'}`}>
-                                            {i % 2 === 0 ? <FiCheckCircle /> : <FiAlertCircle />}
-                                            {i % 2 === 0 ? 'Paid' : 'Pending'}
-                                        </span>
-                                    </td>
-                                    <td><button className="btn-icon"><FiMoreVertical /></button></td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -194,12 +269,18 @@ const FeeDashboard = () => {
 
 const FeeManagement = () => {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('dashboard');
+    const location = useLocation();
+    const [activeTab, setActiveTab] = useState(location.state?.defaultTab || 'dashboard');
+
+    React.useEffect(() => {
+        if (location.state && location.state.defaultTab) {
+            setActiveTab(location.state.defaultTab);
+        }
+    }, [location]);
 
     const tabs = [
         { id: 'dashboard', label: 'Overview', icon: <FiGrid /> },
         { id: 'batches', label: 'Batches', icon: <FiLayers /> },
-        { id: 'structures', label: 'Fee Structures', icon: <FiList /> },
         { id: 'payments', label: 'Payments', icon: <FiCreditCard /> },
         { id: 'refunds', label: 'Refunds', icon: <FiRefreshCcw /> },
         { id: 'settings', label: 'Settings', icon: <FiSettings /> },
@@ -243,22 +324,11 @@ const FeeManagement = () => {
                 >
                     {activeTab === 'dashboard' && <FeeDashboard />}
                     {activeTab === 'batches' && <FeeBatches />}
-                    {activeTab === 'payments' && <FeePayments />}
+                    {activeTab === 'payments' && <FeePayments setActiveTab={setActiveTab} />}
                     {activeTab === 'refunds' && <FeeRefunds />}
                     {activeTab === 'settings' && <FeeSettings />}
 
-                    {activeTab === 'structures' && (
-                        <div className="glass-card" style={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ textAlign: 'center', color: '#94a3b8' }}>
-                                <FiList size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                                <h3>Fee Structures</h3>
-                                <p>Structure creator module coming soon.</p>
-                                <button className="btn-primary" style={{ margin: '16px auto' }} onClick={() => navigate('/fee/create')}>
-                                    <FiPlus /> Create New Structure
-                                </button>
-                            </div>
-                        </div>
-                    )}
+
                 </motion.div>
             </AnimatePresence>
         </div>

@@ -161,11 +161,33 @@ const NotificationCard = ({ notifType, data, onToggle, onConfigChange, onTest })
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <strong>Message Template:</strong>
                                             <button
-                                                className="btn-icon"
-                                                style={{ height: 24, padding: '0 8px', gap: 4, fontSize: 11, color: '#f59e0b', borderColor: '#fcd34d' }}
+                                                className="test-trigger-btn"
+                                                style={{
+                                                    height: '28px',
+                                                    padding: '0 12px',
+                                                    fontSize: '12px',
+                                                    gap: '6px',
+                                                    color: '#f59e0b',
+                                                    background: 'rgba(245, 158, 11, 0.1)',
+                                                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                                                    borderRadius: '6px',
+                                                    fontWeight: '600',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s ease'
+                                                }}
                                                 onClick={() => onTest(data)}
+                                                onMouseEnter={(e) => {
+                                                    e.currentTarget.style.background = 'rgba(245, 158, 11, 0.2)';
+                                                    e.currentTarget.style.transform = 'translateY(-1px)';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.background = 'rgba(245, 158, 11, 0.1)';
+                                                    e.currentTarget.style.transform = 'translateY(0)';
+                                                }}
                                             >
-                                                <FiZap size={10} /> Test Trigger
+                                                <FiZap size={14} /> Test Trigger
                                             </button>
                                         </div>
                                         <div style={{
@@ -190,7 +212,6 @@ const NotificationCard = ({ notifType, data, onToggle, onConfigChange, onTest })
 );
 
 const FeeSettings = () => {
-    const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
 
     // Default States
@@ -271,21 +292,15 @@ const FeeSettings = () => {
         fetchSettings();
     }, []);
 
-    const fetchSettings = async () => {
-        setLoading(true);
+    const fetchSettings = () => {
         try {
-            await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network
-
             const savedGeneral = localStorage.getItem('fee_general_settings');
             const savedNotifs = localStorage.getItem('fee_notification_settings');
 
             if (savedGeneral) setGeneralSettings(JSON.parse(savedGeneral));
             if (savedNotifs) setNotifications(JSON.parse(savedNotifs));
-
         } catch (error) {
             console.error("Failed to load settings", error);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -368,9 +383,7 @@ const FeeSettings = () => {
         alert(`[TEST AUTOMATION]\n\nSending via: ${activeChannels.toUpperCase()}\n\nMessage:\n"${msg}"`);
     };
 
-    if (loading) {
-        return <div className="glass-card" style={{ padding: 40, textAlign: 'center' }}><FiLoader className="spin" /> Loading Settings...</div>;
-    }
+
 
     return (
         <div style={{ maxWidth: 1200, margin: '0 auto', animation: 'fadeIn 0.5s ease-out' }}>

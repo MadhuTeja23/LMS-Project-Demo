@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiSearch, FiFilter, FiDownload, FiMoreVertical, FiCheckCircle, FiAlertCircle, FiClock, FiFileText, FiPlus, FiX } from 'react-icons/fi';
+import { FiSearch, FiDownload, FiMoreVertical, FiCheckCircle, FiAlertCircle, FiClock, FiFileText, FiPlus, FiX, FiRefreshCcw } from 'react-icons/fi';
 import './FeeManagement.css';
 
-const FeePayments = () => {
+// Portal Helper moved outside to prevent re-creation on render
+const ModalPortal = ({ children }) => {
+    return ReactDOM.createPortal(children, document.body);
+};
+
+const FeePayments = ({ setActiveTab }) => {
     const [filter, setFilter] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
     const [showRecordModal, setShowRecordModal] = useState(false);
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState(null);
+    const [activeMenu, setActiveMenu] = useState(null);
 
     const [paymentForm, setPaymentForm] = useState({
         studentId: '',
@@ -20,13 +26,13 @@ const FeePayments = () => {
         remarks: ''
     });
 
-    const transactions = [
+    const [transactions, setTransactions] = useState([
         { id: 1, student: "Alice Johnson", fee: "Tuition Fee", amount: "₹12,000", date: "Jan 05, 2026", status: "Paid", method: "Online" },
         { id: 2, student: "Bob Smith", fee: "Exam Fee", amount: "₹500", date: "Jan 04, 2026", status: "Paid", method: "Cash" },
         { id: 3, student: "Charlie Brown", fee: "Tuition Fee", amount: "₹6,000", date: "Jan 03, 2026", status: "Partial", method: "Online" },
         { id: 4, student: "David Lee", fee: "Library Fee", amount: "₹200", date: "-", status: "Pending", method: "-" },
         { id: 5, student: "Eve Adams", fee: "Tuition Fee", amount: "₹12,000", date: "-", status: "Overdue", method: "-" },
-    ];
+    ]);
 
     const getStatusBadge = (status) => {
         switch (status) {
@@ -40,11 +46,70 @@ const FeePayments = () => {
 
     const handleRecordPayment = (e) => {
         e.preventDefault();
-        // Here you would add the API call
+        e.stopPropagation();
+
+        // Basic Validation
+        if (!paymentForm.studentId || !paymentForm.amount) {
+            alert("Please fill all required fields");
+            return;
+        }
+
+        const payAmount = Number(paymentForm.amount);
+
+        // --- UPDATE CENTRALIZED DATA (lms_fee_data) ---
+        const allBatches = JSON.parse(localStorage.getItem('lms_fee_data') || '[]');
+        let studentFound = false;
+        const searchTermLower = paymentForm.studentId.toString().toLowerCase();
+
+        const updatedBatches = allBatches.map(batch => {
+            if (!batch.studentList) return batch;
+
+            const studentIndex = batch.studentList.findIndex(s =>
+                String(s.id) === searchTermLower ||
+                s.name.toLowerCase().includes(searchTermLower)
+            );
+
+            if (studentIndex !== -1) {
+                studentFound = true;
+                const student = batch.studentList[studentIndex];
+
+                student.paidAmount = (student.paidAmount || 0) + payAmount;
+                student.lastPay = paymentForm.date;
+
+                // Update status logic
+                if (student.paidAmount >= student.totalFee) student.status = 'PAID';
+                else if (student.paidAmount > 0) student.status = 'PARTIAL';
+
+                // Simple batch stats update (optional but good for consistency)
+                // batch.collected += ... logic could go here
+            }
+            return batch;
+        });
+
+        if (studentFound) {
+            localStorage.setItem('lms_fee_data', JSON.stringify(updatedBatches));
+        }
+        // ----------------------------------------------
+
+        const newTxn = {
+            id: Date.now(),
+            student: paymentForm.studentId,
+            fee: "Manual Payment",
+            amount: "₹" + payAmount.toLocaleString(),
+            date: new Date(paymentForm.date || Date.now()).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+            status: "Paid",
+            method: paymentForm.mode
+        };
+
+        setTransactions(prev => [newTxn, ...prev]);
         console.log("Payment Recorded:", paymentForm);
-        alert("Payment Recorded Successfully!");
         setShowRecordModal(false);
         setPaymentForm({ studentId: '', amount: '', mode: 'UPI', transactionId: '', date: new Date().toISOString().split('T')[0], remarks: '' });
+
+        if (studentFound) {
+            // Optional: User feedback that student record was updated
+            // alert("Payment recorded and student fee status updated.");
+        }
     };
 
     const openInvoice = (txn) => {
@@ -57,10 +122,7 @@ const FeePayments = () => {
         (t.student.toLowerCase().includes(searchTerm.toLowerCase()) || t.fee.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-    // Portal Helper
-    const ModalPortal = ({ children }) => {
-        return ReactDOM.createPortal(children, document.body);
-    };
+
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -91,7 +153,6 @@ const FeePayments = () => {
                     <button className="btn-primary" onClick={() => setShowRecordModal(true)} style={{ padding: '8px 16px' }}>
                         <FiPlus /> Record Payment
                     </button>
-                    <button className="btn-icon"><FiFilter /></button>
                     <button className="btn-icon"><FiDownload /></button>
                 </div>
             </div>
@@ -123,7 +184,7 @@ const FeePayments = () => {
                                 <td>{txn.method}</td>
                                 <td>{getStatusBadge(txn.status)}</td>
                                 <td>
-                                    <div style={{ display: 'flex', gap: 8 }}>
+                                    <div style={{ display: 'flex', gap: 8, position: 'relative' }}>
                                         {txn.status === 'Paid' && (
                                             <button
                                                 className="btn-icon"
@@ -134,9 +195,77 @@ const FeePayments = () => {
                                                 <FiFileText size={14} />
                                             </button>
                                         )}
-                                        <button className="btn-icon" style={{ width: 32, height: 32 }}>
+                                        <button
+                                            className="btn-icon"
+                                            title="Request Refund"
+                                            style={{ width: 32, height: 32 }}
+                                            onClick={() => setActiveTab && setActiveTab('refunds')}
+                                        >
+                                            <FiRefreshCcw size={14} />
+                                        </button>
+
+                                        {/* More Actions Toggle */}
+                                        <button
+                                            className="btn-icon"
+                                            style={{ width: 32, height: 32 }}
+                                            onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === txn.id ? null : txn.id); }}
+                                        >
                                             <FiMoreVertical size={14} />
                                         </button>
+
+                                        {/* Dropdown Menu */}
+                                        {activeMenu === txn.id && (
+                                            <div className="dropdown-menu show" style={{
+                                                position: 'absolute', right: 0, top: '100%',
+                                                minWidth: 160, zIndex: 50, marginTop: 4,
+                                                background: 'white', border: '1px solid #e2e8f0', borderRadius: 8,
+                                                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                                            }}>
+                                                <button
+                                                    className="dropdown-item"
+                                                    style={{ width: '100%', textAlign: 'left', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}
+                                                    onClick={() => {
+                                                        alert(`Receipt sent to student ${txn.student} via Email.`);
+                                                        setActiveMenu(null);
+                                                    }}
+                                                >
+                                                    <FiFileText size={12} /> Email Receipt
+                                                </button>
+                                                <button
+                                                    className="dropdown-item text-danger"
+                                                    style={{ width: '100%', textAlign: 'left', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8, color: '#ef4444' }}
+                                                    onClick={() => {
+                                                        if (window.confirm('Delete this transaction? This will reverse the payment.')) {
+                                                            setTransactions(prev => prev.filter(t => t.id !== txn.id));
+
+                                                            // Reverse Logic (Simulated for this demo list, but real for newly added manual ones)
+                                                            // Ideally we match by Student ID and subtract Balance
+                                                            const allBatches = JSON.parse(localStorage.getItem('lms_fee_data') || '[]');
+                                                            // Since demo data IDs are loose, we try to match by name for demo purposes, or ID if strictly linked
+                                                            const updated = allBatches.map(b => {
+                                                                if (!b.studentList) return b;
+                                                                b.studentList = b.studentList.map(s => {
+                                                                    // Loose match for demo
+                                                                    if (s.name === txn.student || String(s.id) === String(txn.student)) {
+                                                                        // Parse amount string '₹12,000' -> 12000
+                                                                        const amt = Number(txn.amount.replace(/[^0-9.-]+/g, ""));
+                                                                        s.paidAmount = Math.max(0, (s.paidAmount || 0) - amt);
+                                                                        if (s.paidAmount === 0) s.status = 'PENDING';
+                                                                        else if (s.paidAmount < s.totalFee) s.status = 'PARTIAL';
+                                                                    }
+                                                                    return s;
+                                                                });
+                                                                return b;
+                                                            });
+                                                            localStorage.setItem('lms_fee_data', JSON.stringify(updated));
+                                                            setActiveMenu(null);
+                                                        }
+                                                    }}
+                                                >
+                                                    <FiX size={12} /> Delete Transaction
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </td>
                             </tr>
